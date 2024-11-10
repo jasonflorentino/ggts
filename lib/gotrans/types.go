@@ -1,9 +1,12 @@
-package gotransit
+package gotrans
+
+import "sort"
 
 type Destination struct {
-	Code        string      `json:"code"`
-	Name        string      `json:"name"`
-	TransitType TransitType `json:"transitType"`
+	Code         string      `json:"code"`
+	Name         string      `json:"name"`
+	TransitType  TransitType `json:"transitType"`
+	X_isSelected bool
 }
 
 type Destinations []Destination
@@ -15,6 +18,52 @@ func (dests Destinations) IndexOfCode(code string) int {
 		}
 	}
 	return -1
+}
+
+type destsSorter struct {
+	dests Destinations
+	by    func(a, b *Destination) bool
+}
+
+// Len is part of sort.Interface.
+func (s *destsSorter) Len() int {
+	return len(s.dests)
+}
+
+// Swap is part of sort.Interface.
+func (s *destsSorter) Swap(i, j int) {
+	s.dests[i], s.dests[j] = s.dests[j], s.dests[i]
+}
+
+// Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
+func (s *destsSorter) Less(i, j int) bool {
+	return s.by(&s.dests[i], &s.dests[j])
+}
+
+func (dests Destinations) Sort() {
+	sorter := &destsSorter{
+		dests: dests,
+		by: func(a, b *Destination) bool {
+			return a.Name < b.Name
+		},
+	}
+	sort.Sort(sorter)
+}
+
+func (dests Destinations) SetSelected(code string) Destinations {
+	newDests := make(Destinations, len(dests))
+	var dest Destination
+	for i, d := range dests {
+		if d.Code == code {
+			dest.Code = code
+			dest.Name = d.Name
+			dest.X_isSelected = true
+			newDests[i] = dest
+		} else {
+			newDests[i] = d
+		}
+	}
+	return newDests
 }
 
 func (dests Destinations) OnlyRail() Destinations {
@@ -81,12 +130,6 @@ type Timetable struct {
 }
 
 type TransitType int
-
-const (
-	Bus  TransitType = 0
-	Rail TransitType = 1
-	All  TransitType = 2
-)
 
 type Trip struct {
 	ArrivalTimeDisplay   string      `json:"arrivalTimeDisplay"`

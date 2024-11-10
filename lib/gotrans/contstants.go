@@ -1,6 +1,22 @@
-package gotransit
+package gotrans
 
 const API_URL = "api.gotransit.com"
+
+const (
+	bus  TransitType = 0
+	rail TransitType = 1
+	all  TransitType = 2
+)
+
+var TransitTypes = struct {
+	Bus  TransitType
+	Rail TransitType
+	All  TransitType
+}{
+	Bus:  bus,
+	Rail: rail,
+	All:  all,
+}
 
 var StationCode = struct {
 	Union       string

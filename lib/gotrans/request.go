@@ -1,4 +1,4 @@
-package gotransit
+package gotrans
 
 import (
 	"gogotrainschedule/lib/log"

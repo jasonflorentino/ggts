@@ -1,4 +1,4 @@
-package gotransit
+package gotrans
 
 import (
 	"compress/gzip"
@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -63,5 +64,37 @@ func FetchTimetable(fromStop, toStop, date string) (Timetable, error) {
 			fmt.Sprintf("Could not unmarshal json: %s\n", err),
 		)
 	}
+
+	trips, err := filterTrips(timetable.Trips)
+	if err != nil {
+		return Timetable{}, echo.NewHTTPError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("Error filtering trips: %s\n", err),
+		)
+	}
+	timetable.Trips = trips
+
 	return timetable, nil
+}
+
+// Filters only trips
+// - that haven't happened yet
+// - are rail
+// - are direct
+func filterTrips(trips []Trip) ([]Trip, error) {
+	now := time.Now()
+	i := 0
+	for _, trip := range trips {
+		tripTime, err := time.ParseInLocation("2006-01-02T15:04:05", trip.OrderTime, time.Local)
+		if err != nil {
+			return nil, err
+		}
+		if tripTime.After(now) &&
+			trip.TransitType == TransitTypes.Rail &&
+			trip.Transfers == 0 {
+			trips[i] = trip
+			i++
+		}
+	}
+	return trips[:i], nil
 }

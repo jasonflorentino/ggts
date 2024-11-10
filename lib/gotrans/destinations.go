@@ -1,4 +1,4 @@
-package gotransit
+package gotrans
 
 import (
 	"compress/gzip"
@@ -58,4 +58,21 @@ func FetchDestinations(destinationCode, date string) (Destinations, error) {
 		)
 	}
 	return destinations.OnlyRail(), nil
+}
+
+// Fetches Union Station's destinations as the default list since it is
+// central hub through which GO Trains connect.
+// Union is a Rail station only so there will not be any bus destinations.
+// This list won't include Union Station itself so we should add it to complete the list.
+func FetchDestinationsDefault(date string) (Destinations, error) {
+	destinations, err := FetchDestinations(StationCode.Union, date)
+	if err != nil {
+		return nil, err
+	}
+	unionIdx := destinations.IndexOfCode(Union.Code)
+	if unionIdx == -1 {
+		destinations = append(destinations, Union)
+		destinations.Sort()
+	}
+	return destinations, nil
 }

@@ -10,10 +10,12 @@
 	</head>
 	<body>
         <h1>GoGoTrainSchedule</h1>
-        
+
         <form>
-            {{ template "from" . }}
-            {{ template "to" . }}
+            <label for="fromStop">From:</label>
+            {{ template "selectFrom" . }}
+            <label for="toStop">To:</label>
+            {{ template "selectTo" . }}
         </form>
 	
         {{ template "trips" .Timetable }}
@@ -45,24 +47,26 @@
 {{ end }}
 
 {{ block "destinationOption" . }}
-    <option value="{{ .Code }}">{{ .Name }}</option>
+    <option value="{{ .Code }}" {{ if .X_isSelected }}selected{{ end }}>{{ .Name }}</option>
 {{ end }}
 
-{{ block "from" . }}
-<label for="fromStop">From:</label>
-<select name="fromStop" id="fromStop">
-    {{ template "destinationOption" .From }}
-	{{ range .Destinations }}
+{{ block "selectFrom" . }}
+<select 
+    hx-get="/to"
+    hx-target="#toStop"
+    hx-swap="outerHTML"
+    id="fromStop"
+    name="fromStop" 
+>
+	{{ range .DestinationsFrom }}
 		{{ template "destinationOption" . }}
 	{{ end}}
 </select>
 {{ end }}
 
-{{ block "to" . }}
-<label for="toStop">To:</label>
+{{ block "selectTo" . }}
 <select name="toStop" id="toStop">
-    {{ template "destinationOption" .To }}
-	{{ range .Destinations }}
+	{{ range .DestinationsTo }}
 		{{ template "destinationOption" . }}
 	{{ end}}
 </select>
@@ -81,7 +85,7 @@
 {{ block "trip" . }}
 <li>
     <p>Departs: {{ .DepartureTimeDisplay }} <span class="timeToCatch" data-zero-time="{{ .OrderTime }}"></span></p>
+    <p>Travels: {{ .Duration }}</p>
     <p>Arrives: {{ .ArrivalTimeDisplay }}</p>
-    <p>Duration: {{ .Duration }}</p>
 </li>
 {{ end}}
