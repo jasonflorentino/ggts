@@ -18,7 +18,9 @@
             {{ template "selectTo" . }}
         </form>
 	
-        {{ template "trips" .Timetable }}
+        {{ template "timetable" . }}
+        
+        <div id="null"></div>
         
 		<script>
 			document.addEventListener("DOMContentLoaded", (event) => {
@@ -55,6 +57,7 @@
     hx-get="/to"
     hx-target="#toStop"
     hx-swap="outerHTML"
+    hx-include="#toStop"
     id="fromStop"
     name="fromStop" 
 >
@@ -65,17 +68,24 @@
 {{ end }}
 
 {{ block "selectTo" . }}
-<select name="toStop" id="toStop">
+<select 
+    hx-get="/trips"
+    hx-target="#timetable"
+    hx-swap="outerHTML"
+    hx-include="#fromStop"
+    name="toStop" 
+    id="toStop"
+>
 	{{ range .DestinationsTo }}
 		{{ template "destinationOption" . }}
 	{{ end}}
 </select>
 {{ end }}
 
-{{ block "trips" . }}
-<div id="trips">
+{{ block "timetable" . }}
+<div id="timetable">
     <ol>
-	{{ range .Trips }}
+	{{ range .Timetable.Trips }}
 		{{ template "trip" . }}
 	{{ end}}
     </ol>

@@ -103,13 +103,26 @@ func main() {
 	page.DestinationsFrom = destinations
 	page.DestinationsTo = destinations
 
+	e.GET("/trips", func(c echo.Context) error {
+		page := NewPage()
+		fromStop := c.QueryParam("fromStop")
+		toStop := c.QueryParam("toStop")
+		date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
+		timetable, err := gotrans.FetchTimetable(fromStop, toStop, date)
+		if err != nil {
+			return err
+		}
+		page.Timetable = timetable
+		return c.Render(http.StatusOK, "timetable", page)
+	})
+
 	e.GET("/to", func(c echo.Context) error {
+		page := NewPage()
 		fromStop := c.QueryParam("fromStop")
 		dests, err := gotrans.FetchDestinations(fromStop, defaultDate())
 		if err != nil {
 			e.Logger.Fatal(err)
 		}
-		page := NewPage()
 		page.DestinationsTo = dests.SetSelected(dests[0].Code)
 		return c.Render(http.StatusOK, "selectTo", page)
 	})
