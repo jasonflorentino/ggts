@@ -10,13 +10,11 @@
 	</head>
 	<body>
         <h1>GoGoTrainSchedule</h1>
+        
         <form>
             {{ template "from" . }}
             {{ template "to" . }}
         </form>
-
-               <!-- <h2>From: {{ .Timetable.DepartureDisplay }}</h2>
-               <h2>To: {{ .Timetable.ArrivalDisplay }}</h2> -->
 	
         {{ template "trips" .Timetable }}
         
@@ -29,6 +27,18 @@
 					}
 				})
 			})
+
+            const allTimeLefts = Array.from(document.querySelectorAll('.timeToCatch'));
+            function updateTimeToCatch() {
+                allTimeLefts.forEach((el) => {
+                    const now = Date.now();
+                    const end = new Date(el.dataset.zeroTime).getTime();
+                    const min = (end - now) / 1000 / 60;
+                    el.innerText = `(${Math.round(min)}m)`;
+                })
+            }
+            updateTimeToCatch();
+            setInterval(updateTimeToCatch, 1000 * 5)
 		</script>
 	</body>
 </html>
@@ -70,7 +80,7 @@
 
 {{ block "trip" . }}
 <li>
-    <p>Departs: {{ .DepartureTimeDisplay }}</p>
+    <p>Departs: {{ .DepartureTimeDisplay }} <span class="timeToCatch" data-zero-time="{{ .OrderTime }}"></span></p>
     <p>Arrives: {{ .ArrivalTimeDisplay }}</p>
     <p>Duration: {{ .Duration }}</p>
 </li>
