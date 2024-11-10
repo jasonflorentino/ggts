@@ -1,0 +1,77 @@
+{{ block "index" . }}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>GoGoTrainSchedule</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚆</text></svg>" />
+		<script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
+	</head>
+	<body>
+        <h1>GoGoTrainSchedule</h1>
+        <form>
+            {{ template "from" . }}
+            {{ template "to" . }}
+        </form>
+
+               <!-- <h2>From: {{ .Timetable.DepartureDisplay }}</h2>
+               <h2>To: {{ .Timetable.ArrivalDisplay }}</h2> -->
+	
+        {{ template "trips" .Timetable }}
+        
+		<script>
+			document.addEventListener("DOMContentLoaded", (event) => {
+				document.body.addEventListener("htmx:beforeSwap", (evt) => {
+					if (evt.detail.xhr.status === 422) {
+						evt.detail.shouldSwap = true;
+						evt.detail.isError = false;
+					}
+				})
+			})
+		</script>
+	</body>
+</html>
+{{ end }}
+
+{{ block "destinationOption" . }}
+    <option value="{{ .Code }}">{{ .Name }}</option>
+{{ end }}
+
+{{ block "from" . }}
+<label for="fromStop">From:</label>
+<select name="fromStop" id="fromStop">
+    {{ template "destinationOption" .From }}
+	{{ range .Destinations }}
+		{{ template "destinationOption" . }}
+	{{ end}}
+</select>
+{{ end }}
+
+{{ block "to" . }}
+<label for="toStop">To:</label>
+<select name="toStop" id="toStop">
+    {{ template "destinationOption" .To }}
+	{{ range .Destinations }}
+		{{ template "destinationOption" . }}
+	{{ end}}
+</select>
+{{ end }}
+
+{{ block "trips" . }}
+<div id="trips">
+    <ol>
+	{{ range .Trips }}
+		{{ template "trip" . }}
+	{{ end}}
+    </ol>
+</div>
+{{ end }}
+
+{{ block "trip" . }}
+<li>
+    <p>Departs: {{ .DepartureTimeDisplay }}</p>
+    <p>Arrives: {{ .ArrivalTimeDisplay }}</p>
+    <p>Duration: {{ .Duration }}</p>
+</li>
+{{ end}}
