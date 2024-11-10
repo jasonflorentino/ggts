@@ -149,7 +149,7 @@ func filterTrips(trips []gotransit.Trip) ([]gotransit.Trip, error) {
 		if err != nil {
 			return nil, err
 		}
-		if tripTime.After(now) {
+		if tripTime.After(now) && trip.TransitType == 1 && trip.Transfers == 0 {
 			trips[i] = trip
 			i++
 		}
