@@ -3,3 +3,5 @@ tailwindcss
 build
 static
 out
+.env
+.env.local

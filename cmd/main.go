@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gogotrainschedule/lib/env"
 	"gogotrainschedule/lib/gotrans"
 	"gogotrainschedule/lib/log"
 	"html/template"
@@ -90,6 +91,7 @@ func defaultTo() gotrans.Destination {
 }
 
 func main() {
+	env.LoadEnv()
 	gotrans.InitCache()
 
 	e := echo.New()
