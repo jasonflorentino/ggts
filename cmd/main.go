@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gogotrainschedule/lib/gotrans"
 	"gogotrainschedule/lib/log"
 	"html/template"
@@ -100,6 +101,10 @@ func main() {
 		fromStop := c.QueryParam("fromStop")
 		toStop := c.QueryParam("toStop")
 		date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
+		c.Response().Header().Add(
+			"HX-Push-Url",
+			fmt.Sprintf("?fromStop=%s&toStop=%s", fromStop, toStop),
+		)
 		timetable, err := gotrans.FetchTimetable(fromStop, toStop, date)
 		if err != nil {
 			return err
@@ -116,8 +121,10 @@ func main() {
 		if err != nil {
 			e.Logger.Fatal(err)
 		}
+		dests = append(gotrans.Destinations{gotrans.Destination{Code: "", Name: "Where to?"}}, dests...)
 		page.DestinationsTo = dests.SetSelected(dests[0].Code)
-		return c.Render(http.StatusOK, "selectTo", page)
+		c.Render(http.StatusOK, "selectTo", page)
+		return c.Render(http.StatusOK, "timetable", page)
 	})
 
 	e.GET("/", func(c echo.Context) error {
