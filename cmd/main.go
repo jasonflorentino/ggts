@@ -69,7 +69,7 @@ func defaultIfEmpty(value, defaultValue string) string {
 func isStartOfDay() bool {
 	now := time.Now()
 	hour := now.Hour()
-	return hour < 13
+	return hour > 13
 }
 
 func defaultFrom() gotrans.Destination {
@@ -91,17 +91,9 @@ func defaultTo() gotrans.Destination {
 func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
+	e.Static("/", "static")
 
-	page := NewPage()
 	e.Renderer = newTemplate()
-
-	// destinations := make(gotrans.Destinations, 1)
-	destinations, err := gotrans.FetchDestinationsDefault(defaultDate())
-	if err != nil {
-		e.Logger.Fatal(err)
-	}
-	page.DestinationsFrom = destinations
-	page.DestinationsTo = destinations
 
 	e.GET("/trips", func(c echo.Context) error {
 		page := NewPage()
@@ -119,7 +111,8 @@ func main() {
 	e.GET("/to", func(c echo.Context) error {
 		page := NewPage()
 		fromStop := c.QueryParam("fromStop")
-		dests, err := gotrans.FetchDestinations(fromStop, defaultDate())
+		date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
+		dests, err := gotrans.FetchDestinations(fromStop, date)
 		if err != nil {
 			e.Logger.Fatal(err)
 		}
@@ -128,9 +121,55 @@ func main() {
 	})
 
 	e.GET("/", func(c echo.Context) error {
+		page := NewPage()
+
 		fromStop := defaultIfEmpty(c.QueryParam("fromStop"), defaultFrom().Code)
 		toStop := defaultIfEmpty(c.QueryParam("toStop"), defaultTo().Code)
 		date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
+
+		// Fetch destination list for FROM and TO drop downs
+
+		// Always fetch desinations from Union for our default list of stations
+		destinationsDefault, err := gotrans.FetchDestinationsDefault(date)
+		if err != nil {
+			return err
+		}
+		page.DestinationsFrom = destinationsDefault
+
+		if fromStop == gotrans.StationCode.Union {
+			page.DestinationsTo = destinationsDefault
+		} else {
+			destinations, err := gotrans.FetchDestinations(fromStop, date)
+			if err != nil {
+				return err
+			}
+			page.DestinationsTo = destinations
+		}
+
+		// Set "selected" for the drop down
+
+		var from gotrans.Destination
+		fromIdx := destinationsDefault.IndexOfCode(fromStop)
+		if fromIdx == -1 {
+			from = defaultFrom()
+		} else {
+			from = destinationsDefault[fromIdx]
+		}
+		page.From = from
+		page.DestinationsFrom = page.DestinationsFrom.SetSelected(from.Code)
+
+		// TODO: evaluate if this is really necessary for TO
+		var to gotrans.Destination
+		toIdx := page.DestinationsTo.IndexOfCode(toStop)
+		if toIdx == -1 {
+			to = defaultTo()
+		} else {
+			to = page.DestinationsTo[toIdx]
+		}
+		page.To = to
+		page.DestinationsTo = page.DestinationsTo.SetSelected(to.Code)
+
+		// Fetch timetable for the from-to combination
 
 		timetable, err := gotrans.FetchTimetable(fromStop, toStop, date)
 		if err != nil {
@@ -138,30 +177,9 @@ func main() {
 		}
 		page.Timetable = timetable
 
-		var from gotrans.Destination
-		fromIdx := destinations.IndexOfCode(fromStop)
-		if fromIdx == -1 {
-			from = defaultFrom()
-		} else {
-			from = destinations[fromIdx]
-		}
-		page.From = from
-
-		var to gotrans.Destination
-		toIdx := destinations.IndexOfCode(toStop)
-		if toIdx == -1 {
-			to = defaultTo()
-		} else {
-			to = destinations[toIdx]
-		}
-		page.To = to
-
-		page.DestinationsFrom = page.DestinationsFrom.SetSelected(from.Code)
-		page.DestinationsTo = page.DestinationsTo.SetSelected(to.Code)
-
 		return c.Render(http.StatusOK, "index", page)
 	})
 
 	e.HTTPErrorHandler = customHTTPErrorHandler
-	e.Logger.Fatal(e.Start("localhost:42069"))
+	e.Logger.Fatal(e.Start(":42069"))
 }

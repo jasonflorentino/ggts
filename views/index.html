@@ -1,50 +1,71 @@
 {{ block "index" . }}
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>GoGoTrainSchedule</title>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚆</text></svg>" />
-		<script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
-	</head>
-	<body>
-        <h1>GoGoTrainSchedule</h1>
+<head>
+    <title>GoGoTrainSchedule</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚆</text></svg>" />
+    <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
+    <link href="./style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-800 text-green-100">
+    <header class="p-4 border-b-2 border-green-100">
+        <h1 class="text-2xl font-bold">GoGoTrainSchedule</h1>
+    </header>
 
-        <form>
-            <label for="fromStop">From:</label>
-            {{ template "selectFrom" . }}
-            <label for="toStop">To:</label>
-            {{ template "selectTo" . }}
+    <main class="p-4">
+        <form class="flex flex-col gap-4 mt-2">
+            <div class="flex items-center">
+                <label for="fromStop" class="block min-w-12">From:</label>
+                {{ template "selectFrom" . }}
+            </div>
+            <div class="flex items-center">
+                <label for="toStop" class="block min-w-12">To:</label>
+                {{ template "selectTo" . }}
+            </div>
         </form>
-	
-        {{ template "timetable" . }}
+    
+        <section class="mt-4">
+            <h2 class="text-xl font-bold">Trips</h2>
+            {{ template "timetable" . }}
+        </section>
+    </main>
+    
+    
+    <script>
+        let interval;
         
-        <div id="null"></div>
-        
-		<script>
-			document.addEventListener("DOMContentLoaded", (event) => {
-				document.body.addEventListener("htmx:beforeSwap", (evt) => {
-					if (evt.detail.xhr.status === 422) {
-						evt.detail.shouldSwap = true;
-						evt.detail.isError = false;
-					}
-				})
-			})
-
-            const allTimeLefts = Array.from(document.querySelectorAll('.timeToCatch'));
-            function updateTimeToCatch() {
-                allTimeLefts.forEach((el) => {
-                    const now = Date.now();
-                    const end = new Date(el.dataset.zeroTime).getTime();
-                    const min = (end - now) / 1000 / 60;
-                    el.innerText = `(${Math.round(min)}m)`;
-                })
-            }
+        document.addEventListener("DOMContentLoaded", (event) => {
             updateTimeToCatch();
-            setInterval(updateTimeToCatch, 1000 * 5)
-		</script>
-	</body>
+            interval = setInterval(updateTimeToCatch, 1000 * 5)
+            
+            document.body.addEventListener("htmx:beforeSwap", (evt) => {
+                if (evt.detail.xhr.status === 422) {
+                    evt.detail.shouldSwap = true;
+                    evt.detail.isError = false;
+                }
+            })
+            document.body.addEventListener("htmx:afterSwap", (evt) => {
+                if (evt.detail.target.id === "timetable") {
+                    clearInterval(interval)
+                    updateTimeToCatch();
+                    interval = setInterval(updateTimeToCatch, 1000 * 5)
+                }
+            })
+        })
+
+        function updateTimeToCatch() {
+            const allTimeLefts = Array.from(document.querySelectorAll('.timeToCatch'));
+            allTimeLefts.forEach((el) => {
+                const now = Date.now();
+                const end = new Date(el.dataset.zeroTime).getTime();
+                const min = (end - now) / 1000 / 60;
+                el.innerText = `(${Math.round(min)}m)`;
+            })
+        }
+    </script>
+</body>
 </html>
 {{ end }}
 
@@ -60,6 +81,7 @@
     hx-include="#toStop"
     id="fromStop"
     name="fromStop" 
+    class="p-3 text-lg w-full text-green-100 border border-green-100 bg-gray-900 min-h-8"
 >
 	{{ range .DestinationsFrom }}
 		{{ template "destinationOption" . }}
@@ -75,6 +97,7 @@
     hx-include="#fromStop"
     name="toStop" 
     id="toStop"
+    class="p-3 text-lg w-full text-green-100 border border-green-100 bg-gray-900 min-h-8"
 >
 	{{ range .DestinationsTo }}
 		{{ template "destinationOption" . }}
@@ -83,19 +106,32 @@
 {{ end }}
 
 {{ block "timetable" . }}
-<div id="timetable">
+<div id="timetable" class="mt-2">
     <ol>
 	{{ range .Timetable.Trips }}
 		{{ template "trip" . }}
-	{{ end}}
+    {{ else }}
+        <li class="flex justify-center p-4">
+            <p class="text-lg">No results</p>
+        </li>
+	{{ end }}
     </ol>
 </div>
 {{ end }}
 
 {{ block "trip" . }}
-<li>
-    <p>Departs: {{ .DepartureTimeDisplay }} <span class="timeToCatch" data-zero-time="{{ .OrderTime }}"></span></p>
-    <p>Travels: {{ .Duration }}</p>
-    <p>Arrives: {{ .ArrivalTimeDisplay }}</p>
+<li class="border-t border-green-100 grid grid-cols-3 gap-2 pt-1 pb-4">
+    <div class="flex flex-col">
+        <span class="text-xs uppercase">Departs</span>
+        <span class="text-lg font-medium">{{ .DepartureTimeDisplay }} <span class="timeToCatch text-base font-normal" data-zero-time="{{ .OrderTime }}"></span></span>
+    </div>
+    <div class="flex flex-col">
+        <span class="text-xs uppercase">Travels</span>
+        <span class="text-lg">{{ .Duration }}</span>
+    </div>
+    <div class="flex flex-col">
+        <span class="text-xs uppercase">Arrives</span>
+        <span class="text-lg font-medium">{{ .ArrivalTimeDisplay }}</span>
+    </div>
 </li>
-{{ end}}
+{{ end }}
