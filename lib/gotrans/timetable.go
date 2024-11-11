@@ -10,11 +10,33 @@ import (
 	"net/url"
 	"time"
 
+	lru "github.com/hashicorp/golang-lru/v2"
+
 	"github.com/labstack/echo/v4"
 )
 
+func makeTimetableCache() *lru.Cache[string, Timetable] {
+	timetableCache, err := lru.New[string, Timetable](10)
+	if err != nil {
+		panic(fmt.Errorf("couldn't init timetable cache %s", err))
+	}
+	return timetableCache
+}
+
+func toTimetableKey(fromStop, toStop, date string) string {
+	return fmt.Sprintf("%s:%s:%s", fromStop, toStop, date)
+}
+
 // date: "YYYY-MM-DD"
 func FetchTimetable(fromStop, toStop, date string) (Timetable, error) {
+	cacheKey := toTimetableKey(fromStop, toStop, date)
+	if Cache.Timetable.Contains(cacheKey) {
+		log.Infof("Timetable Cache HIT: %s", cacheKey)
+		cached, _ := Cache.Timetable.Get(cacheKey)
+		return cached, nil
+	}
+	log.Infof("Timetable Cache MISS: %s", cacheKey)
+
 	params := url.Values{}
 	params.Add("fromStop", fromStop)
 	params.Add("toStop", toStop)
@@ -74,6 +96,7 @@ func FetchTimetable(fromStop, toStop, date string) (Timetable, error) {
 	}
 	timetable.Trips = trips
 
+	Cache.Timetable.Add(cacheKey, timetable)
 	return timetable, nil
 }
 

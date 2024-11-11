@@ -90,6 +90,8 @@ func defaultTo() gotrans.Destination {
 }
 
 func main() {
+	gotrans.InitCache()
+
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Static("/", "static")

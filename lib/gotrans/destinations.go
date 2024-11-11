@@ -8,11 +8,33 @@ import (
 	"io"
 	"net/http"
 
+	lru "github.com/hashicorp/golang-lru/v2"
+
 	"github.com/labstack/echo/v4"
 )
 
+func makeDestinationsCache() *lru.Cache[string, Destinations] {
+	destinationCache, err := lru.New[string, Destinations](10)
+	if err != nil {
+		panic(fmt.Errorf("couldn't init destinations cache %s", err))
+	}
+	return destinationCache
+}
+
+func toDestinationsKey(destinationCode, date string) string {
+	return fmt.Sprintf("%s:%s", destinationCode, date)
+}
+
 // date: "YYYY-MM-DD"
 func FetchDestinations(destinationCode, date string) (Destinations, error) {
+	cacheKey := toDestinationsKey(destinationCode, date)
+	if Cache.Destinations.Contains(cacheKey) {
+		log.Infof("Destinations Cache HIT: %s", cacheKey)
+		cachedDestinations, _ := Cache.Destinations.Get(cacheKey)
+		return cachedDestinations, nil
+	}
+	log.Infof("Destinations Cache MISS: %s", cacheKey)
+
 	req, err := Request(fmt.Sprintf("/v2/schedules/stops/%s/destinations?Date=%s", destinationCode, date))
 	if err != nil {
 		return nil, echo.NewHTTPError(
@@ -57,7 +79,9 @@ func FetchDestinations(destinationCode, date string) (Destinations, error) {
 			fmt.Sprintf("Could not unmarshal json: %s\n", err),
 		)
 	}
-	return destinations.OnlyRail(), nil
+	railDestinations := destinations.OnlyRail()
+	Cache.Destinations.Add(cacheKey, railDestinations)
+	return railDestinations, nil
 }
 
 // Fetches Union Station's destinations as the default list since it is
@@ -65,6 +89,14 @@ func FetchDestinations(destinationCode, date string) (Destinations, error) {
 // Union is a Rail station only so there will not be any bus destinations.
 // This list won't include Union Station itself so we should add it to complete the list.
 func FetchDestinationsDefault(date string) (Destinations, error) {
+	cacheKey := toDestinationsKey(StationCode.Union, date)
+	if Cache.Destinations.Contains(cacheKey) {
+		log.Infof("Destinations Cache HIT: %s", cacheKey)
+		cachedDestinations, _ := Cache.Destinations.Get(cacheKey)
+		return cachedDestinations, nil
+	}
+	log.Infof("Destinations Cache MISS: %s", cacheKey)
+
 	destinations, err := FetchDestinations(StationCode.Union, date)
 	if err != nil {
 		return nil, err
@@ -74,5 +106,7 @@ func FetchDestinationsDefault(date string) (Destinations, error) {
 		destinations = append(destinations, Union)
 		destinations.Sort()
 	}
+
+	Cache.Destinations.Add(cacheKey, destinations)
 	return destinations, nil
 }
