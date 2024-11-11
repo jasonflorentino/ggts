@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-go build -o ./out/main ./cmd
+GOOS=linux GOARCH=amd64 go build -v -o ./out/main ./cmd
 
 # You need tailwind CLI:
 # https://tailwindcss.com/blog/standalone-cli

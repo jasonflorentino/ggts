@@ -2,12 +2,18 @@ package log
 
 import "fmt"
 
+const DEBUG = false
+
 func Info(i ...interface{}) {
-	fmt.Println(i...)
+	if DEBUG {
+		fmt.Println(i...)
+	}
 }
 
 func Infof(format string, args ...interface{}) {
-	fmt.Printf(format+"\n", args...)
+	if DEBUG {
+		fmt.Printf(format+"\n", args...)
+	}
 }
 
 func Error(i ...interface{}) {
