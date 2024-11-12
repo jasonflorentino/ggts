@@ -12,9 +12,10 @@ TODO:
 You need tailwind CLI:
 https://tailwindcss.com/blog/standalone-cli
 
-- Create `.env.local`
+- Create .env files 
     - `.env.local` will take precedence over `.env` vars of the same key
 ```
+cp .env.template .env
 cp .env.template .env.local
 ```
 - Run air
