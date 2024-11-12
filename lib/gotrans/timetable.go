@@ -28,21 +28,21 @@ func toTimetableKey(fromStop, toStop, date string) string {
 }
 
 // date: "YYYY-MM-DD"
-func FetchTimetable(fromStop, toStop, date string) (Timetable, error) {
+func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, error) {
 	cacheKey := toTimetableKey(fromStop, toStop, date)
 	if Cache.Timetable.Contains(cacheKey) {
-		log.Infof("Timetable Cache HIT: %s", cacheKey)
+		log.To(c).Infof("Timetable Cache HIT: %s", cacheKey)
 		cached, _ := Cache.Timetable.Get(cacheKey)
 		return cached, nil
 	}
-	log.Infof("Timetable Cache MISS: %s", cacheKey)
+	log.To(c).Infof("Timetable Cache MISS: %s", cacheKey)
 
 	params := url.Values{}
 	params.Add("fromStop", fromStop)
 	params.Add("toStop", toStop)
 	params.Add("date", date)
 	queryString := params.Encode()
-	req, err := Request(fmt.Sprintf("/v2/schedules/en/timetable/all?%s", queryString))
+	req, err := Request(c, fmt.Sprintf("/v2/schedules/en/timetable/all?%s", queryString))
 	if err != nil {
 		return Timetable{}, echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -57,7 +57,7 @@ func FetchTimetable(fromStop, toStop, date string) (Timetable, error) {
 			fmt.Sprintf("Error sending http request: %s", err),
 		)
 	}
-	log.Infof("Got response - Status: %d, ContentLength: %d", res.StatusCode, res.ContentLength)
+	log.To(c).Infof("Got response - Status: %d, ContentLength: %d", res.StatusCode, res.ContentLength)
 
 	var body []byte
 	if res.Header.Get("Content-Encoding") == "gzip" {
@@ -77,7 +77,7 @@ func FetchTimetable(fromStop, toStop, date string) (Timetable, error) {
 		}
 	}
 
-	log.Debugf("Body: %s", string(body))
+	log.To(c).Debugf("Body: %s", string(body))
 
 	var timetable Timetable
 	if err := json.Unmarshal(body, &timetable); err != nil {

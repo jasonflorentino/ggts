@@ -4,14 +4,16 @@ import (
 	"gogotrainschedule/lib/log"
 	"net/http"
 	"unicode/utf8"
+
+	"github.com/labstack/echo/v4"
 )
 
-func Request(endpoint string) (*http.Request, error) {
+func Request(c echo.Context, endpoint string) (*http.Request, error) {
 	if r, _ := utf8.DecodeRuneInString(endpoint); r != '/' {
 		endpoint = "/" + endpoint
 	}
 	url := "https://" + API_URL + endpoint
-	log.Infof("Creating request: %s", url)
+	log.To(c).Infof("Creating request: %s", url)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	req.Header = http.Header{
 		"Accept":          {"*/*"},

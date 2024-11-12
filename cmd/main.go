@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"gogotrainschedule/lib/env"
 	"gogotrainschedule/lib/gotrans"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	gommonlog "github.com/labstack/gommon/log"
 )
 
 type Templates struct {
@@ -54,7 +56,7 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 	if he, ok := err.(*echo.HTTPError); ok {
 		code = he.Code
 	}
-	log.Error(err)
+	log.To(c).Error(err)
 	page := NewPage()
 	page.ErrorCode = code
 	page.ErrorMessage = http.StatusText(code)
@@ -95,8 +97,15 @@ func main() {
 	gotrans.InitCache()
 
 	e := echo.New()
+	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 	e.Static("/", "static")
+
+	if env.IsProd() {
+		e.HideBanner = true
+		e.Logger.SetLevel(gommonlog.INFO)
+		e.Logger.SetOutput(log.ToFile())
+	}
 
 	e.Renderer = newTemplate()
 
@@ -109,7 +118,7 @@ func main() {
 			"HX-Push-Url",
 			fmt.Sprintf("?fromStop=%s&toStop=%s", fromStop, toStop),
 		)
-		timetable, err := gotrans.FetchTimetable(fromStop, toStop, date)
+		timetable, err := gotrans.FetchTimetable(c, fromStop, toStop, date)
 		if err != nil {
 			return err
 		}
@@ -121,14 +130,26 @@ func main() {
 		page := NewPage()
 		fromStop := c.QueryParam("fromStop")
 		date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
-		dests, err := gotrans.FetchDestinations(fromStop, date)
+		dests, err := gotrans.FetchDestinations(c, fromStop, date)
 		if err != nil {
-			e.Logger.Fatal(err)
+			return err
 		}
 		dests = append(gotrans.Destinations{gotrans.Destination{Code: "", Name: "Where to?"}}, dests...)
 		page.DestinationsTo = dests.SetSelected(dests[0].Code)
-		c.Render(http.StatusOK, "selectTo", page)
-		return c.Render(http.StatusOK, "timetable", page)
+
+		var buf bytes.Buffer
+		if err := e.Renderer.Render(&buf, "selectTo", page, c); err != nil {
+			return err
+		}
+		headerHTML := buf.String()
+
+		buf.Reset()
+		if err := e.Renderer.Render(&buf, "timetable", page, c); err != nil {
+			return err
+		}
+		contentHTML := buf.String()
+
+		return c.HTML(http.StatusOK, headerHTML+contentHTML)
 	})
 
 	e.GET("/", func(c echo.Context) error {
@@ -141,7 +162,7 @@ func main() {
 		// Fetch destination list for FROM and TO drop downs
 
 		// Always fetch desinations from Union for our default list of stations
-		destinationsDefault, err := gotrans.FetchDestinationsDefault(date)
+		destinationsDefault, err := gotrans.FetchDestinationsDefault(c, date)
 		if err != nil {
 			return err
 		}
@@ -150,7 +171,7 @@ func main() {
 		if fromStop == gotrans.StationCode.Union {
 			page.DestinationsTo = destinationsDefault
 		} else {
-			destinations, err := gotrans.FetchDestinations(fromStop, date)
+			destinations, err := gotrans.FetchDestinations(c, fromStop, date)
 			if err != nil {
 				return err
 			}
@@ -182,7 +203,7 @@ func main() {
 
 		// Fetch timetable for the from-to combination
 
-		timetable, err := gotrans.FetchTimetable(fromStop, toStop, date)
+		timetable, err := gotrans.FetchTimetable(c, fromStop, toStop, date)
 		if err != nil {
 			return err
 		}

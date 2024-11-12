@@ -27,6 +27,10 @@ func LoadEnv() {
 	assertEnv()
 }
 
+func IsProd() bool {
+	return os.Getenv("GGTS_ENV") == "production"
+}
+
 func NotProd() bool {
 	return os.Getenv("GGTS_ENV") != "production"
 }

@@ -1,41 +1,21 @@
 package log
 
 import (
-	"fmt"
-	"gogotrainschedule/lib/env"
+	"io"
+
+	"github.com/labstack/echo/v4"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-const pre_d = "DEBUG: "
-const pre_i = "INFO: "
-const pre_e = "ERROR: "
+func To(c echo.Context) echo.Logger {
+	return c.Echo().Logger
+}
 
-func Debug(i ...interface{}) {
-	if env.NotProd() {
-		i = append([]interface{}{pre_d}, i...)
-		fmt.Println(i...)
+func ToFile() io.Writer {
+	return &lumberjack.Logger{
+		Filename:   "log.txt",
+		MaxSize:    10, // megabytes
+		MaxBackups: 3,  // files to keep
+		MaxAge:     28, // days
 	}
-}
-
-func Debugf(format string, args ...interface{}) {
-	if env.NotProd() {
-		fmt.Printf(pre_d+format+"\n", args...)
-	}
-}
-
-func Info(i ...interface{}) {
-	i = append([]interface{}{pre_i}, i...)
-	fmt.Println(i...)
-}
-
-func Infof(format string, args ...interface{}) {
-	fmt.Printf(pre_i+format+"\n", args...)
-}
-
-func Error(i ...interface{}) {
-	i = append([]interface{}{pre_e}, i...)
-	fmt.Println(i...)
-}
-
-func Errorf(format string, args ...interface{}) {
-	fmt.Printf(pre_e+format+"\n", args...)
 }

@@ -26,16 +26,16 @@ func toDestinationsKey(destinationCode, date string) string {
 }
 
 // date: "YYYY-MM-DD"
-func FetchDestinations(destinationCode, date string) (Destinations, error) {
+func FetchDestinations(c echo.Context, destinationCode, date string) (Destinations, error) {
 	cacheKey := toDestinationsKey(destinationCode, date)
 	if Cache.Destinations.Contains(cacheKey) {
-		log.Infof("Destinations Cache HIT: %s", cacheKey)
+		log.To(c).Infof("Destinations Cache HIT: %s", cacheKey)
 		cachedDestinations, _ := Cache.Destinations.Get(cacheKey)
 		return cachedDestinations, nil
 	}
-	log.Infof("Destinations Cache MISS: %s", cacheKey)
+	log.To(c).Infof("Destinations Cache MISS: %s", cacheKey)
 
-	req, err := Request(fmt.Sprintf("/v2/schedules/stops/%s/destinations?Date=%s", destinationCode, date))
+	req, err := Request(c, fmt.Sprintf("/v2/schedules/stops/%s/destinations?Date=%s", destinationCode, date))
 	if err != nil {
 		return nil, echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -50,7 +50,7 @@ func FetchDestinations(destinationCode, date string) (Destinations, error) {
 			fmt.Sprintf("Error sending http request: %s\n", err),
 		)
 	}
-	log.Infof("Got response - Status: %d, ContentLength: %d", res.StatusCode, res.ContentLength)
+	log.To(c).Infof("Got response - Status: %d, ContentLength: %d", res.StatusCode, res.ContentLength)
 
 	var body []byte
 	if res.Header.Get("Content-Encoding") == "gzip" {
@@ -70,7 +70,7 @@ func FetchDestinations(destinationCode, date string) (Destinations, error) {
 		}
 	}
 
-	log.Debugf("Body: %s", string(body))
+	log.To(c).Debugf("Body: %s", string(body))
 
 	var destinations Destinations
 	if err := json.Unmarshal(body, &destinations); err != nil {
@@ -88,16 +88,16 @@ func FetchDestinations(destinationCode, date string) (Destinations, error) {
 // central hub through which GO Trains connect.
 // Union is a Rail station only so there will not be any bus destinations.
 // This list won't include Union Station itself so we should add it to complete the list.
-func FetchDestinationsDefault(date string) (Destinations, error) {
+func FetchDestinationsDefault(c echo.Context, date string) (Destinations, error) {
 	cacheKey := toDestinationsKey(StationCode.Union, date)
 	if Cache.Destinations.Contains(cacheKey) {
-		log.Infof("Destinations Cache HIT: %s", cacheKey)
+		log.To(c).Infof("Destinations Cache HIT: %s", cacheKey)
 		cachedDestinations, _ := Cache.Destinations.Get(cacheKey)
 		return cachedDestinations, nil
 	}
-	log.Infof("Destinations Cache MISS: %s", cacheKey)
+	log.To(c).Infof("Destinations Cache MISS: %s", cacheKey)
 
-	destinations, err := FetchDestinations(StationCode.Union, date)
+	destinations, err := FetchDestinations(c, StationCode.Union, date)
 	if err != nil {
 		return nil, err
 	}
