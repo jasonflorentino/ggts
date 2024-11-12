@@ -1,11 +1,9 @@
 package gotrans
 
 import (
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"gogotrainschedule/lib/log"
-	"io"
 	"net/http"
 
 	lru "github.com/hashicorp/golang-lru/v2"
@@ -52,24 +50,10 @@ func FetchDestinations(c echo.Context, destinationCode, date string) (Destinatio
 	}
 	log.To(c).Infof("Got response - Status: %d, ContentLength: %d", res.StatusCode, res.ContentLength)
 
-	var body []byte
-	if res.Header.Get("Content-Encoding") == "gzip" {
-		reader, err := gzip.NewReader(res.Body)
-		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-		defer reader.Close()
-		body, err = io.ReadAll(reader)
-		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-	} else {
-		body, err = io.ReadAll(res.Body)
-		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
+	body, err := GetBody(res)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-
 	log.To(c).Debugf("Body: %s", string(body))
 
 	var destinations Destinations

@@ -1,7 +1,9 @@
 package gotrans
 
 import (
+	"compress/gzip"
 	"gogotrainschedule/lib/log"
+	"io"
 	"net/http"
 	"unicode/utf8"
 
@@ -34,4 +36,26 @@ func Request(c echo.Context, endpoint string) (*http.Request, error) {
 		return nil, err
 	}
 	return req, nil
+}
+
+func GetBody(res *http.Response) ([]byte, error) {
+	var body []byte
+	var err error
+	if res.Header.Get("Content-Encoding") == "gzip" {
+		reader, err := gzip.NewReader(res.Body)
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
+		body, err = io.ReadAll(reader)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		body, err = io.ReadAll(res.Body)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return body, nil
 }

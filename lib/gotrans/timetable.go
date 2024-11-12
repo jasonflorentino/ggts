@@ -1,11 +1,9 @@
 package gotrans
 
 import (
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"gogotrainschedule/lib/log"
-	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -59,24 +57,10 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 	}
 	log.To(c).Infof("Got response - Status: %d, ContentLength: %d", res.StatusCode, res.ContentLength)
 
-	var body []byte
-	if res.Header.Get("Content-Encoding") == "gzip" {
-		reader, err := gzip.NewReader(res.Body)
-		if err != nil {
-			return Timetable{}, echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-		defer reader.Close()
-		body, err = io.ReadAll(reader)
-		if err != nil {
-			return Timetable{}, echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-	} else {
-		body, err = io.ReadAll(res.Body)
-		if err != nil {
-			return Timetable{}, echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
+	body, err := GetBody(res)
+	if err != nil {
+		return Timetable{}, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-
 	log.To(c).Debugf("Body: %s", string(body))
 
 	var timetable Timetable
