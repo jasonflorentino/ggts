@@ -107,6 +107,7 @@ func main() {
 		e.Logger.SetOutput(log.ToFile())
 	}
 
+	e.Logger.Infof("SERVER START")
 	e.Renderer = newTemplate()
 
 	e.GET("/trips", func(c echo.Context) error {
@@ -130,6 +131,10 @@ func main() {
 		page := NewPage()
 		fromStop := c.QueryParam("fromStop")
 		date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
+		c.Response().Header().Add(
+			"HX-Push-Url",
+			fmt.Sprintf("?fromStop=%s", fromStop),
+		)
 		dests, err := gotrans.FetchDestinations(c, fromStop, date)
 		if err != nil {
 			return err
@@ -141,15 +146,15 @@ func main() {
 		if err := e.Renderer.Render(&buf, "selectTo", page, c); err != nil {
 			return err
 		}
-		headerHTML := buf.String()
+		selectTo := buf.String()
 
 		buf.Reset()
 		if err := e.Renderer.Render(&buf, "timetable", page, c); err != nil {
 			return err
 		}
-		contentHTML := buf.String()
+		timetable := buf.String()
 
-		return c.HTML(http.StatusOK, headerHTML+contentHTML)
+		return c.HTML(http.StatusOK, selectTo+timetable)
 	})
 
 	e.GET("/", func(c echo.Context) error {
