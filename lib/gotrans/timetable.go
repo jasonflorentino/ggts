@@ -77,7 +77,7 @@ func FetchTimetable(fromStop, toStop, date string) (Timetable, error) {
 		}
 	}
 
-	log.Infof("Body: %s", string(body))
+	log.Debugf("Body: %s", string(body))
 
 	var timetable Timetable
 	if err := json.Unmarshal(body, &timetable); err != nil {

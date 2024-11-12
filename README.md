@@ -12,6 +12,11 @@ TODO:
 You need tailwind CLI:
 https://tailwindcss.com/blog/standalone-cli
 
+- Create `.env.local`
+    - `.env.local` will take precedence over `.env` vars of the same key
+```
+cp .env.template .env.local
+```
 - Run air
 ```
 air

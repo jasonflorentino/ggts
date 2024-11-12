@@ -192,5 +192,5 @@ func main() {
 	})
 
 	e.HTTPErrorHandler = customHTTPErrorHandler
-	e.Logger.Fatal(e.Start(":42069"))
+	e.Logger.Fatal(e.Start(":" + env.Port()))
 }

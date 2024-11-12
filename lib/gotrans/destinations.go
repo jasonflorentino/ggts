@@ -70,7 +70,7 @@ func FetchDestinations(destinationCode, date string) (Destinations, error) {
 		}
 	}
 
-	log.Infof("Body: %s", string(body))
+	log.Debugf("Body: %s", string(body))
 
 	var destinations Destinations
 	if err := json.Unmarshal(body, &destinations); err != nil {
