@@ -74,7 +74,7 @@ func defaultIfEmpty(value, defaultValue string) string {
 func isStartOfDay() bool {
 	now := time.Now()
 	hour := now.Hour()
-	return hour > 13
+	return hour < 13
 }
 
 func defaultFrom() gotrans.Destination {
