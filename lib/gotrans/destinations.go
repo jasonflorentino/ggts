@@ -12,7 +12,8 @@ import (
 )
 
 func makeDestinationsCache() *lru.Cache[string, Destinations] {
-	destinationCache, err := lru.New[string, Destinations](10)
+	const MAX_ITEMS = 10
+	destinationCache, err := lru.New[string, Destinations](MAX_ITEMS)
 	if err != nil {
 		panic(fmt.Errorf("couldn't init destinations cache %s", err))
 	}
@@ -69,15 +70,19 @@ func FetchDestinations(c echo.Context, destinationCode, date string) (Destinatio
 }
 
 // Fetches Union Station's destinations as the default list since it is
-// central hub through which GO Trains connect.
+// a central hub through which GO Trains connect.
 // Union is a Rail station only so there will not be any bus destinations.
 // This list won't include Union Station itself so we should add it to complete the list.
 func FetchDestinationsDefault(c echo.Context, date string) (Destinations, error) {
 	cacheKey := toDestinationsKey(StationCode.Union, date)
 	if Cache.Destinations.Contains(cacheKey) {
 		log.To(c).Infof("Destinations Cache HIT: %s", cacheKey)
-		cachedDestinations, _ := Cache.Destinations.Get(cacheKey)
-		return cachedDestinations, nil
+		cachedDests, _ := Cache.Destinations.Get(cacheKey)
+		cachedDests, updated := includeUnionInDestinations(cachedDests)
+		if updated {
+			Cache.Destinations.Add(cacheKey, cachedDests)
+		}
+		return cachedDests, nil
 	}
 	log.To(c).Infof("Destinations Cache MISS: %s", cacheKey)
 
@@ -85,12 +90,20 @@ func FetchDestinationsDefault(c echo.Context, date string) (Destinations, error)
 	if err != nil {
 		return nil, err
 	}
+	destinations, updated := includeUnionInDestinations(destinations)
+	if updated {
+		Cache.Destinations.Add(cacheKey, destinations)
+	}
+	return destinations, nil
+}
+
+func includeUnionInDestinations(destinations Destinations) (Destinations, bool) {
+	updated := false
 	unionIdx := destinations.IndexOfCode(Union.Code)
 	if unionIdx == -1 {
 		destinations = append(destinations, Union)
 		destinations.Sort()
+		updated = true
 	}
-
-	Cache.Destinations.Add(cacheKey, destinations)
-	return destinations, nil
+	return destinations, updated
 }

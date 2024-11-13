@@ -40,6 +40,7 @@ func (s *destsSorter) Less(i, j int) bool {
 	return s.by(&s.dests[i], &s.dests[j])
 }
 
+// Sort sorts dests by name
 func (dests Destinations) Sort() {
 	sorter := &destsSorter{
 		dests: dests,

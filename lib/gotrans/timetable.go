@@ -14,7 +14,8 @@ import (
 )
 
 func makeTimetableCache() *lru.Cache[string, Timetable] {
-	timetableCache, err := lru.New[string, Timetable](10)
+	const MAX_ITEMS = 10
+	timetableCache, err := lru.New[string, Timetable](MAX_ITEMS)
 	if err != nil {
 		panic(fmt.Errorf("couldn't init timetable cache %s", err))
 	}
