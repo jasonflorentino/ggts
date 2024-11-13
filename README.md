@@ -2,21 +2,17 @@
 A web app for Go Train schedules written in Go lang
 
 TODO: 
-- Selecting element from the FROM drop down should clear the timetable.
 - Add Date selector for dates other than today. maybe just tomorrow selector?
-- Add SQLite for caching destination data to avoid hitting gotransit on every request
-- 5 or 10 min TTL is probs ok.
-
+- Choose to allow non-direct trips?
+  - but how to layout transfers?
 
 # Development
 You need tailwind CLI:
 https://tailwindcss.com/blog/standalone-cli
 
-- Create .env files 
-    - `.env.local` will take precedence over `.env` vars of the same key
+- Create .env file
 ```
 cp .env.template .env
-cp .env.template .env.local
 ```
 - Run air
 ```
