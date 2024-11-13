@@ -3,7 +3,6 @@ package env
 import (
 	"log"
 	"os"
-	"strings"
 )
 
 func assertEnv() {
@@ -19,24 +18,28 @@ func assertEnv() {
 }
 
 func LoadEnv() {
-	const FILE_NAME string = ".env"
-	const KV_SEP string = "="
-	file, err := os.ReadFile(FILE_NAME)
-	if err != nil {
-		log.Fatal("Error loading env files")
-	}
-	lines := strings.Split(string(file), "\n")
-	for i, line := range lines {
-		kv := strings.Split(line, KV_SEP)
-		if len(kv) > 2 {
-			log.Fatalf("env line %d splits to more than 2 items: %v", i, kv)
-		}
-		if strings.HasPrefix(kv[1], "\"") {
-			log.Fatalf("quoted vals not supported: env line %d - %v", i, kv[1])
-		}
-		keyParts := strings.Split(kv[1], " ") // anything after the first space is ignored
-		os.Setenv(kv[0], keyParts[0])
-	}
+	// This did not work on my linux build running on Ubuntu 22.04
+	// with a go1.23.3.linux-amd64 install, but maybe it's just
+	// just because I'm always doing this at midnight ><
+	//
+	// const FILE_NAME string = ".env"
+	// const KV_SEP string = "="
+	// file, err := os.ReadFile(FILE_NAME)
+	// if err != nil {
+	// 	log.Fatal("Error loading env files")
+	// }
+	// lines := strings.Split(string(file), "\n")
+	// for i, line := range lines {
+	// 	kv := strings.Split(line, KV_SEP)
+	// 	if len(kv) > 2 {
+	// 		log.Fatalf("env line %d splits to more than 2 items: %v", i, kv)
+	// 	}
+	// 	if strings.HasPrefix(kv[1], "\"") {
+	// 		log.Fatalf("quoted vals not supported: env line %d - %v", i, kv[1])
+	// 	}
+	// 	keyParts := strings.Split(kv[1], " ") // anything after the first space is ignored
+	// 	os.Setenv(kv[0], keyParts[0])
+	// }
 	assertEnv()
 }
 
