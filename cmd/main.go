@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -105,6 +106,9 @@ func main() {
 		e.HideBanner = true
 		e.Logger.SetLevel(gommonlog.INFO)
 		e.Logger.SetOutput(log.ToFile())
+	} else {
+		e.Logger.SetLevel(gommonlog.DEBUG)
+		e.Logger.SetOutput(os.Stdout)
 	}
 
 	e.Logger.Infof("SERVER START")
