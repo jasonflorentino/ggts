@@ -131,6 +131,10 @@ func main() {
 		if err != nil {
 			return err
 		}
+		trips.Map(func(t gotrans.Trip) gotrans.Trip {
+			t.Duration = gotrans.ToDurationDisplay(t.Duration)
+			return t
+		})
 		timetable.Trips = trips
 		page.Timetable = timetable
 		return c.Render(http.StatusOK, "timetable", page)
@@ -225,6 +229,10 @@ func main() {
 		if err != nil {
 			return err
 		}
+		trips.Map(func(t gotrans.Trip) gotrans.Trip {
+			t.Duration = gotrans.ToDurationDisplay(t.Duration)
+			return t
+		})
 		timetable.Trips = trips
 		page.Timetable = timetable
 

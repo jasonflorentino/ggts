@@ -6,6 +6,7 @@ import (
 	"gogotrainschedule/lib/log"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	lru "github.com/hashicorp/golang-lru/v2"
@@ -80,7 +81,7 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 // - that haven't happened yet
 // - are rail
 // - are direct
-func FilterTrips(trips []Trip) ([]Trip, error) {
+func FilterTrips(trips Trips) (Trips, error) {
 	now := time.Now()
 	i := 0
 	for _, trip := range trips {
@@ -96,4 +97,9 @@ func FilterTrips(trips []Trip) ([]Trip, error) {
 		}
 	}
 	return trips[:i], nil
+}
+
+func ToDurationDisplay(d string) string {
+	parts := strings.Split(d, ":")
+	return fmt.Sprintf("%sh%sm", parts[0], parts[1])
 }

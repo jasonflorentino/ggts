@@ -145,4 +145,10 @@ type Trip struct {
 	TransitType          TransitType `json:"transitType"`
 }
 
-type Trips = []Trip
+type Trips []Trip
+
+func (ts *Trips) Map(fn func(Trip) Trip) {
+	for i, t := range *ts {
+		(*ts)[i] = fn(t)
+	}
+}
