@@ -11,23 +11,23 @@
 </head>
 <body class="bg-gray-800 text-green-100">
     <header class="p-4 border-b-2 border-green-100">
-        <h1 class="text-2xl font-bold">GoGoTrainSchedule</h1>
+        <h1 class="text-2xl font-bold sm:text-3xl md:text-4xl">🚆 GoGoTrainSchedule</h1>
     </header>
 
     <main class="p-4">
-        <form class="flex flex-col gap-4 mt-2">
-            <div class="flex items-center">
-                <label for="fromStop" class="block min-w-12">From:</label>
+        <form class="flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6 sm:flex-row">
+            <div class="flex items-center w-full">
+                <label for="fromStop" class="block min-w-12 md:text-lg">From</label>
                 {{ template "selectFrom" . }}
             </div>
-            <div class="flex items-center">
-                <label for="toStop" class="block min-w-12">To:</label>
+            <div class="flex items-center w-full">
+                <label for="toStop" class="block min-w-12 md:text-lg">To</label>
                 {{ template "selectTo" . }}
             </div>
         </form>
     
-        <section class="mt-4">
-            <h2 class="text-xl font-bold">Trips</h2>
+        <section class="mt-4 sm:mt-6 md:mt-8">
+            <h2 class="text-xl font-bold sm:text-2xl md:text-3xl">Trips</h2>
             {{ template "timetable" . }}
         </section>
     </main>
@@ -82,7 +82,7 @@
     hx-select-oob="#timetable"
     id="fromStop"
     name="fromStop" 
-    class="p-3 text-lg w-full text-green-100 border border-green-100 bg-gray-900 min-h-8"
+    class="p-3 block h-12 text-lg md:text-xl  w-full text-green-100 border border-green-100 bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
 >
 	{{ range .DestinationsFrom }}
 		{{ template "destinationOption" . }}
@@ -98,7 +98,7 @@
     hx-include="#fromStop"
     name="toStop" 
     id="toStop"
-    class="p-3 text-lg w-full text-green-100 border border-green-100 bg-gray-900 min-h-8"
+    class="p-3 block h-12 text-lg  md:text-xl w-full text-green-100 border border-green-100 bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
 >
 	{{ range .DestinationsTo }}
 		{{ template "destinationOption" . }}
@@ -121,18 +121,18 @@
 {{ end }}
 
 {{ block "trip" . }}
-<li class="border-t border-green-100 grid grid-cols-3 gap-2 pt-1 pb-4">
+<li class="border-t border-green-100 grid grid-cols-3 gap-2 pt-1 pb-5">
     <div class="flex flex-col">
-        <span class="text-xs uppercase">Departs</span>
-        <span class="text-lg font-medium">{{ .DepartureTimeDisplay }} <span class="timeToCatch text-base font-normal" data-zero-time="{{ .OrderTime }}"></span></span>
+        <span class="text-xs md:text-sm text-green-200 uppercase opacity-80 font-medium">Departs</span>
+        <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .DepartureTimeDisplay }} <span class="timeToCatch text-base font-normal" data-zero-time="{{ .OrderTime }}"></span></span>
     </div>
     <div class="flex flex-col">
-        <span class="text-xs uppercase">Travels</span>
-        <span class="text-lg">{{ .Duration }}</span>
+        <span class="text-xs md:text-sm text-sky-200 uppercase opacity-80 font-medium">Travels</span>
+        <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .Duration }}</span>
     </div>
     <div class="flex flex-col">
-        <span class="text-xs uppercase">Arrives</span>
-        <span class="text-lg font-medium">{{ .ArrivalTimeDisplay }}</span>
+        <span class="text-xs md:text-sm text-red-200 uppercase opacity-80 font-medium">Arrives</span>
+        <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .ArrivalTimeDisplay }}</span>
     </div>
 </li>
 {{ end }}
