@@ -48,17 +48,17 @@ echo "Creating log file"
 LOGFILE_K=GGTS_LOGFILE
 LOGFILE_V=$(grep "$LOGFILE_K" "$ENV_FILE_OUT" | sed -E "s/$LOGFILE_K=//")
 
-if [ ! -e "$LOGFILE_V" ]; then 
+if [ ! -n "$LOGFILE_V" ]; then 
   echo "ERROR: no value for .env logfile key $LOGFILE_K"
   exit 1
 fi
 
-touch $LOGFILE_V
-chmod 666 $LOGFILE_V 
+touch ./build/$LOGFILE_V
+chmod 666 ./build/$LOGFILE_V 
 
 echo ""
 echo "Restarting service"
-#systemctl restart ggts.service 
+systemctl restart ggts.service 
 
 echo ""
 echo "Finished"
