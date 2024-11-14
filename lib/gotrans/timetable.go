@@ -101,5 +101,6 @@ func FilterTrips(trips Trips) (Trips, error) {
 
 func ToDurationDisplay(d string) string {
 	parts := strings.Split(d, ":")
+	parts[0], _ = strings.CutPrefix(parts[0], "0")
 	return fmt.Sprintf("%sh%sm", parts[0], parts[1])
 }
