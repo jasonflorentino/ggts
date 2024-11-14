@@ -2,15 +2,19 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Error</title>
+		<title>GoGoTrainSchedule</title>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href="./style.css" rel="stylesheet">
+		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚆</text></svg>" />
+		<link href="style.css" rel="stylesheet">
 	</head>
-	<body class="bg-gray-800 text-green-100">
-		<h1>{{ .ErrorCode }}</h1>
-        <p>Sorry, an error occured:</p>
-		<p>{{ .ErrorMessage }}</p>
+	<body class="bg-stone-800 text-green-200">
+		<div class="p-4">
+			<h1 class="text-3xl font-bold text-green-300">HTTP {{ .ErrorCode }}</h1>
+        	<p class="text-xl">Sorry, an error occurred:</p>
+			<p class="mt-2 font-mono text-lg text-stone-300 rounded p-1 px-2 bg-stone-900">{{ .ErrorMessage }}</p>
+			<p class="mt-2">Please try again later</p>
+		</div>
 	</body>
 </html>
 {{ end }}
