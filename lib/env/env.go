@@ -19,8 +19,14 @@ func LoadEnv() {
 	lines := strings.Split(string(file), "\n")
 	for i, line := range lines {
 		kv := strings.Split(line, KV_SEP)
-		if len(kv) > 2 {
-			log.Fatalf("env line %d splits to more than 2 items: %v", i, kv)
+		if len(kv) == 0 {
+			continue
+		}
+		if len(kv) == 1 && kv[0] == "" {
+			continue
+		}
+		if len(kv) != 2 {
+			log.Fatalf("env line %d splits into %d items: %v", i, len(kv), kv)
 		}
 		if strings.HasPrefix(kv[1], "\"") {
 			log.Fatalf("quoted vals not supported: env line %d - %v", i, kv[1])
@@ -32,15 +38,15 @@ func LoadEnv() {
 }
 
 func assertEnv() {
-	vars := []string{
+	keys := []string{
 		"GGTS_ENV",
 		"GGTS_PORT",
 		"GGTS_TITLE",
 		"GGTS_URL",
 	}
-	for _, v := range vars {
-		if v := env[v]; v == "" {
-			log.Fatalf("Expected %s to be set in .env", v)
+	for _, k := range keys {
+		if v := env[k]; v == "" {
+			log.Fatalf("Expected %s to be set in .env", k)
 		}
 	}
 }
