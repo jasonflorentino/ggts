@@ -109,7 +109,7 @@ func main() {
 	if env.IsProd() {
 		e.HideBanner = true
 		e.Logger.SetLevel(gommonlog.INFO)
-		e.Logger.SetOutput(log.ToFile())
+		e.Logger.SetOutput(log.ToFile(env.LogFile()))
 	} else {
 		e.Logger.SetLevel(gommonlog.DEBUG)
 		e.Logger.SetOutput(os.Stdout)

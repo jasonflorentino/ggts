@@ -5,4 +5,4 @@ static
 out
 .env
 .env.local
-log*.txt
+*log*.txt

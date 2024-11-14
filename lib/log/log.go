@@ -11,9 +11,9 @@ func To(c echo.Context) echo.Logger {
 	return c.Echo().Logger
 }
 
-func ToFile() io.Writer {
+func ToFile(filename string) io.Writer {
 	return &lumberjack.Logger{
-		Filename:   "ggts_log.txt",
+		Filename:   filename,
 		MaxSize:    10, // megabytes
 		MaxBackups: 3,  // files to keep
 		MaxAge:     28, // days

@@ -40,6 +40,7 @@ func LoadEnv() {
 func assertEnv() {
 	keys := []string{
 		"GGTS_ENV",
+		"GGTS_LOGFILE",
 		"GGTS_PORT",
 		"GGTS_TITLE",
 		"GGTS_URL",
@@ -53,6 +54,10 @@ func assertEnv() {
 
 func IsProd() bool {
 	return env["GGTS_ENV"] == "production"
+}
+
+func LogFile() string {
+	return env["GGTS_LOGFILE"]
 }
 
 func NotProd() bool {
