@@ -32,3 +32,7 @@ air
 ```
 open http://locahost:5400
 ```
+
+# Deployment
+I'm running this out of a cheap linux box that already has deps installed.
+To deploy the latest changes, ssh in there, pull main, and run `./update.sh`
