@@ -35,11 +35,15 @@ type Page struct {
 	Timetable        gotrans.Timetable
 	From             gotrans.Destination
 	To               gotrans.Destination
+	GGTS_TITLE       string
+	GGTS_URL         string
 }
 
 func NewPage() Page {
 	return Page{
-		Timetable: gotrans.Timetable{},
+		Timetable:  gotrans.Timetable{},
+		GGTS_TITLE: env.Title(),
+		GGTS_URL:   env.URL(),
 	}
 }
 
@@ -112,6 +116,7 @@ func main() {
 	}
 
 	e.Logger.Infof("SERVER START")
+	e.HTTPErrorHandler = customHTTPErrorHandler
 	e.Renderer = newTemplate()
 
 	e.GET("/trips", func(c echo.Context) error {
@@ -127,15 +132,10 @@ func main() {
 		if err != nil {
 			return err
 		}
-		trips, err := gotrans.FilterTrips(timetable.Trips)
+		timetable, err = gotrans.TransformTimetableForClient(timetable)
 		if err != nil {
 			return err
 		}
-		trips.Map(func(t gotrans.Trip) gotrans.Trip {
-			t.Duration = gotrans.ToDurationDisplay(t.Duration)
-			return t
-		})
-		timetable.Trips = trips
 		page.Timetable = timetable
 		return c.Render(http.StatusOK, "timetable", page)
 	})
@@ -225,20 +225,14 @@ func main() {
 		if err != nil {
 			return err
 		}
-		trips, err := gotrans.FilterTrips(timetable.Trips)
+		timetable, err = gotrans.TransformTimetableForClient(timetable)
 		if err != nil {
 			return err
 		}
-		trips.Map(func(t gotrans.Trip) gotrans.Trip {
-			t.Duration = gotrans.ToDurationDisplay(t.Duration)
-			return t
-		})
-		timetable.Trips = trips
 		page.Timetable = timetable
 
 		return c.Render(http.StatusOK, "index", page)
 	})
 
-	e.HTTPErrorHandler = customHTTPErrorHandler
 	e.Logger.Fatal(e.Start(":" + env.Port()))
 }

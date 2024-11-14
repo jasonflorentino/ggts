@@ -35,6 +35,8 @@ func assertEnv() {
 	vars := []string{
 		"GGTS_ENV",
 		"GGTS_PORT",
+		"GGTS_TITLE",
+		"GGTS_URL",
 	}
 	for _, v := range vars {
 		if v := env[v]; v == "" {
@@ -53,4 +55,12 @@ func NotProd() bool {
 
 func Port() string {
 	return env["GGTS_PORT"]
+}
+
+func Title() string {
+	return env["GGTS_TITLE"]
+}
+
+func URL() string {
+	return env["GGTS_URL"]
 }

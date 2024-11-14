@@ -77,6 +77,24 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 	return timetable, nil
 }
 
+func TransformTimetableForClient(timetable Timetable) (Timetable, error) {
+	datestr, err := ToDatestring(timetable.Date)
+	if err != nil {
+		return timetable, err
+	}
+	timetable.Date = datestr
+	trips, err := FilterTrips(timetable.Trips)
+	if err != nil {
+		return timetable, err
+	}
+	trips.Map(func(t Trip) Trip {
+		t.Duration = ToDurationDisplay(t.Duration)
+		return t
+	})
+	timetable.Trips = trips
+	return timetable, nil
+}
+
 // Filters only trips
 // - that haven't happened yet
 // - are rail
@@ -103,4 +121,12 @@ func ToDurationDisplay(d string) string {
 	parts := strings.Split(d, ":")
 	parts[0], _ = strings.CutPrefix(parts[0], "0")
 	return fmt.Sprintf("%sh%sm", parts[0], parts[1])
+}
+
+func ToDatestring(s string) (string, error) {
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return "", err
+	}
+	return t.Format("Mon Jan 2, 2006"), nil
 }
