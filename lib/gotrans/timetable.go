@@ -78,10 +78,7 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 }
 
 func TransformTimetableForClient(timetable Timetable) (Timetable, error) {
-	datestr, err := ToDatestring(timetable.Date)
-	if err != nil {
-		return timetable, err
-	}
+	datestr := ToDatestring(timetable.Date)
 	timetable.Date = datestr
 	trips, err := FilterTrips(timetable.Trips)
 	if err != nil {
@@ -123,10 +120,10 @@ func ToDurationDisplay(d string) string {
 	return fmt.Sprintf("%sh%sm", parts[0], parts[1])
 }
 
-func ToDatestring(s string) (string, error) {
-	t, err := time.Parse(time.RFC3339, s)
+func ToDatestring(s string) string {
+	t, err := time.ParseInLocation("2006-01-02T15:04:05", s, time.Local)
 	if err != nil {
-		return "", err
+		return s
 	}
-	return t.Format("Mon Jan 2, 2006"), nil
+	return t.Format("Mon Jan 2, 2006")
 }
