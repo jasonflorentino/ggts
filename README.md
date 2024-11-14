@@ -1,5 +1,7 @@
-# Go GoTrain Schedule
-A web app for Go Train schedules written in Go lang
+# GGTS 
+_"Go, go gadget GO train schedule!"_
+
+Go GO Train Schedule (A web app for GO Train schedules written in Go lang.)
 
 TODO: 
 - Add Date selector for dates other than today. maybe just tomorrow selector?
@@ -7,18 +9,26 @@ TODO:
   - but how to layout transfers?
 
 # Development
-You need tailwind CLI:
-https://tailwindcss.com/blog/standalone-cli
+You will need:
+- The Go programming language: https://go.dev/doc/install
+- Air for live-reloading during dev: https://github.com/air-verse/air?tab=readme-ov-file#installation
+- The Tailwind CLI for building the stylesheet: https://tailwindcss.com/blog/standalone-cli
 
+To run the app locally:
 - Create .env file
 ```
 cp .env.template .env
+```
+- Run tailwind in watch mode:
+```
+./tailwindcss -i ./css/style.css -o ./static/style.css --watch
 ```
 - Run air
 ```
 air
 ```
-- Run tailwind watcher:
+
+- The server will be running on the port defined in your .env:
 ```
-./tailwindcss -i ./css/style.css -o ./static/style.css --watch
+open http://locahost:5400
 ```
