@@ -44,7 +44,7 @@ else
 fi
 
 echo ""
-echo "Creating log file"
+echo "Checking log file"
 LOGFILE_K=GGTS_LOGFILE
 LOGFILE_V=$(grep "$LOGFILE_K" "$ENV_FILE_OUT" | sed -E "s/$LOGFILE_K=//")
 LOGFILE_P=./build/$LOGFILE_V
