@@ -127,6 +127,11 @@ func main() {
 		if err != nil {
 			return err
 		}
+		trips, err := gotrans.FilterTrips(timetable.Trips)
+		if err != nil {
+			return err
+		}
+		timetable.Trips = trips
 		page.Timetable = timetable
 		return c.Render(http.StatusOK, "timetable", page)
 	})
@@ -216,6 +221,11 @@ func main() {
 		if err != nil {
 			return err
 		}
+		trips, err := gotrans.FilterTrips(timetable.Trips)
+		if err != nil {
+			return err
+		}
+		timetable.Trips = trips
 		page.Timetable = timetable
 
 		return c.Render(http.StatusOK, "index", page)

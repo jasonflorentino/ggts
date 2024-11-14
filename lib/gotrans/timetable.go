@@ -72,15 +72,6 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 		)
 	}
 
-	trips, err := filterTrips(timetable.Trips)
-	if err != nil {
-		return Timetable{}, echo.NewHTTPError(
-			http.StatusInternalServerError,
-			fmt.Sprintf("Error filtering trips: %s\n", err),
-		)
-	}
-	timetable.Trips = trips
-
 	Cache.Timetable.Add(cacheKey, timetable)
 	return timetable, nil
 }
@@ -89,7 +80,7 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 // - that haven't happened yet
 // - are rail
 // - are direct
-func filterTrips(trips []Trip) ([]Trip, error) {
+func FilterTrips(trips []Trip) ([]Trip, error) {
 	now := time.Now()
 	i := 0
 	for _, trip := range trips {
