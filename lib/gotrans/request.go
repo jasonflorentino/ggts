@@ -2,7 +2,7 @@ package gotrans
 
 import (
 	"compress/gzip"
-	"gogotrainschedule/lib/log"
+	"ggts/lib/log"
 	"io"
 	"net/http"
 	"unicode/utf8"

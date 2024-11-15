@@ -3,7 +3,7 @@ package gotrans
 import (
 	"encoding/json"
 	"fmt"
-	"gogotrainschedule/lib/log"
+	"ggts/lib/log"
 	"net/http"
 
 	lru "github.com/hashicorp/golang-lru/v2"

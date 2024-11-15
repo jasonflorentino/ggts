@@ -3,7 +3,10 @@ package env
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
+
+	gommonlog "github.com/labstack/gommon/log"
 )
 
 var env map[string]string
@@ -58,6 +61,18 @@ func IsProd() bool {
 
 func LogFile() string {
 	return env["GGTS_LOGFILE"]
+}
+
+func LogLevel() gommonlog.Lvl {
+	l := env["GGTS_LOGFILE"]
+	if l == "" {
+		return gommonlog.Lvl(0)
+	}
+	li, err := strconv.Atoi(l)
+	if err != nil {
+		return gommonlog.Lvl(0)
+	}
+	return gommonlog.Lvl(li)
 }
 
 func NotProd() bool {

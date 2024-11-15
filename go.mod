@@ -1,4 +1,4 @@
-module gogotrainschedule
+module ggts 
 
 go 1.23.2
 
