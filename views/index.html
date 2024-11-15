@@ -41,7 +41,7 @@
         
         document.addEventListener("DOMContentLoaded", (event) => {
             updateTimeToDepart();
-            interval = setInterval(updateTimeToDepart, 1000 * 5)
+            interval = setInterval(updateTimeToDepart, 1000 * 5);
             
             document.body.addEventListener("htmx:beforeSwap", (evt) => {
                 if (evt.detail.xhr.status === 422) {
@@ -51,9 +51,9 @@
             })
             document.body.addEventListener("htmx:afterSwap", (evt) => {
                 if (evt.detail.target.id === "timetable") {
-                    clearInterval(interval)
+                    clearInterval(interval);
                     updateTimeToDepart();
-                    interval = setInterval(updateTimeToDepart, 1000 * 5)
+                    interval = setInterval(updateTimeToDepart, 1000 * 5);
                 }
             })
         })
@@ -63,8 +63,8 @@
             allTimeLefts.forEach((el) => {
                 const now = Date.now();
                 const end = new Date(el.dataset.zeroTime).getTime();
-                const min = Math.floor((end - now) / 1000 / 60)
-                const hrs = Math.floor(min / 60)
+                const min = Math.floor((end - now) / 1000 / 60);
+                const hrs = Math.floor(min / 60);
                 el.innerText = `(${hrs > 0 ? hrs + "h" : ""  }${min - (hrs * 60)}m)`;
             })
         }
