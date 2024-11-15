@@ -76,11 +76,7 @@ func defaultIfEmpty(value, defaultValue string) string {
 
 func isStartOfDay() bool {
 	now := time.Now()
-	loc, err := time.LoadLocation("America/New_York")
-	if err != nil {
-		return now.Hour() < 13
-	}
-	return now.In(loc).Hour() < 13
+	return now.In(env.Location()).Hour() < 13
 }
 
 func defaultFrom() gotrans.Destination {
@@ -173,7 +169,6 @@ func handleTo(c echo.Context) error {
 	selectTo := buf.String()
 
 	buf.Reset()
-
 	if err := c.Echo().Renderer.Render(&buf, "timetable", page, c); err != nil {
 		return err
 	}

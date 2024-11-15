@@ -3,6 +3,7 @@ package gotrans
 import (
 	"encoding/json"
 	"fmt"
+	"ggts/lib/env"
 	"ggts/lib/log"
 	"net/http"
 	"net/url"
@@ -98,7 +99,7 @@ func TransformTimetableForClient(timetable Timetable) (Timetable, error) {
 // - are direct
 func FilterTrips(trips Trips) (Trips, error) {
 	now := time.Now()
-	i := 0
+	out := make(Trips, 0)
 	for _, trip := range trips {
 		tripTime, err := time.ParseInLocation("2006-01-02T15:04:05", trip.OrderTime, time.Local)
 		if err != nil {
@@ -107,11 +108,10 @@ func FilterTrips(trips Trips) (Trips, error) {
 		if tripTime.After(now) &&
 			trip.TransitType == TransitTypes.Rail &&
 			trip.Transfers == 0 {
-			trips[i] = trip
-			i++
+			out = append(out, trip)
 		}
 	}
-	return trips[:i], nil
+	return out, nil
 }
 
 func ToDurationDisplay(d string) string {
@@ -124,7 +124,10 @@ func ToDurationDisplay(d string) string {
 }
 
 func ToDatestring(s string) string {
-	t, err := time.ParseInLocation("2006-01-02T15:04:05", s, time.Local)
+	t, err := time.ParseInLocation("2006-01-02T15:04:05", s, env.Location())
+	if err != nil {
+		t, err = time.ParseInLocation("2006-01-02T15:04:05-07:00", s, env.Location())
+	}
 	if err != nil {
 		return s
 	}

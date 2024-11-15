@@ -5,11 +5,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	gommonlog "github.com/labstack/gommon/log"
 )
 
 var env map[string]string
+var loc *time.Location
 
 func LoadEnv() {
 	const FILE_NAME string = ".env"
@@ -38,6 +40,7 @@ func LoadEnv() {
 		env[kv[0]] = keyParts[0]
 	}
 	assertEnv()
+	initLocation()
 }
 
 func assertEnv() {
@@ -53,6 +56,18 @@ func assertEnv() {
 			log.Fatalf("Expected %s to be set in .env", k)
 		}
 	}
+}
+
+func initLocation() {
+	l, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		log.Fatalf("error loading location %s", err)
+	}
+	loc = l
+}
+
+func Location() *time.Location {
+	return loc
 }
 
 func IsProd() bool {
