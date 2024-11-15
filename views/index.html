@@ -63,8 +63,9 @@
             allTimeLefts.forEach((el) => {
                 const now = Date.now();
                 const end = new Date(el.dataset.zeroTime).getTime();
-                const min = (end - now) / 1000 / 60;
-                el.innerText = `(${Math.round(min)}m)`;
+                const min = Math.floor((end - now) / 1000 / 60)
+                const hrs = Math.floor(min / 60)
+                el.innerText = `(${hrs > 0 ? hrs + "h" : ""  }${min - (hrs * 60)}m)`;
             })
         }
     </script>
