@@ -119,8 +119,14 @@ func ToDurationDisplay(d string) string {
 	if len(parts) != 3 {
 		return d
 	}
+	// First char is always `0`.
+	// There are no GO trips that take 10+ hours
 	hour, _ := strings.CutPrefix(parts[0], "0")
-	return fmt.Sprintf("%sh%sm", hour, parts[1])
+	if hour == "0" {
+		return fmt.Sprintf("%sm", parts[1])
+	} else {
+		return fmt.Sprintf("%sh%sm", hour, parts[1])
+	}
 }
 
 func ToDatestring(s string) string {

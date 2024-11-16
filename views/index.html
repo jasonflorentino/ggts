@@ -9,15 +9,14 @@
     <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
     <link href="style.css" rel="stylesheet">
 </head>
-<body class="bg-stone-900 text-green-200">
-    <header class="p-4 border-b-2 border-green-200">
+<body class="bg-stone-900 text-green-200 selection:bg-green-300 selection:text-green-900">
+    <header class="p-2 sm:p-4 border-b-2 border-green-200 bg-green-500">
         <a href="{{ .GGTS_URL }}">
-            <h1 class="text-2xl font-bold sm:text-3xl md:text-4xl">🚆 GoGoTrainSchedule</h1>
+            <h1 class="text-2xl text-green-100 font-bold sm:text-3xl md:text-4xl">🚆 GoGoTrainSchedule</h1>
         </a>
     </header>
 
-    <main class="p-4">
-        <h2 class="mb-4">{{ .Timetable.Date }}</h2>
+    <main class="p-4 min-h-svh">
         <form class="flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6 sm:flex-row">
             <div class="flex items-center w-full">
                 <label for="fromStop" class="block min-w-12 md:text-lg">From</label>
@@ -30,12 +29,12 @@
         </form>
     
         <section class="mt-4 sm:mt-6 md:mt-8">
-            <h2 class="text-xl font-bold sm:text-2xl md:text-3xl">Trips</h2>
             {{ template "timetable" . }}
         </section>
     </main>
     
-    
+    {{ template "footer" . }}
+
     <script>
         let interval;
         
@@ -59,7 +58,7 @@
         })
 
         function updateTimeToDepart() {
-            const allTimeLefts = Array.from(document.querySelectorAll('.timeToCatch'));
+            const allTimeLefts = Array.from(document.querySelectorAll('.timeToDepart'));
             allTimeLefts.forEach((el) => {
                 const now = Date.now();
                 const end = new Date(el.dataset.zeroTime).getTime();
@@ -86,7 +85,7 @@
     hx-select-oob="#timetable"
     id="fromStop"
     name="fromStop" 
-    class="p-3 block h-12 text-lg md:text-xl  w-full text-green-100 border border-green-100 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    class="p-3 block h-12 rounded text-lg font-medium md:text-xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
 	{{ range .DestinationsFrom }}
 		{{ template "destinationOption" . }}
@@ -102,7 +101,7 @@
     hx-include="#fromStop"
     name="toStop" 
     id="toStop"
-    class="p-3 block h-12 text-lg  md:text-xl w-full text-green-100 border border-green-100 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    class="p-3 block h-12 rounded text-lg font-medium md:text-xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
 	{{ range .DestinationsTo }}
 		{{ template "destinationOption" . }}
@@ -111,7 +110,14 @@
 {{ end }}
 
 {{ block "timetable" . }}
-<div id="timetable" class="mt-2">
+<div id="timetable">
+<div class="flex gap-2 items-baseline"> 
+    <h2 class="text-xl text-green-300 font-bold sm:text-2xl md:text-3xl">Trips</h2>
+    {{ if .Timetable.Date }}
+        <span class="ml-auto md:ml-0">{{ .Timetable.ServiceName }} – <span class="font-medium">{{ .Timetable.Date }}</span></span>
+    {{ end }}
+</div>
+<div  class="mt-2">
     <ol>
 	{{ range .Timetable.Trips }}
 		{{ template "trip" . }}
@@ -122,16 +128,17 @@
 	{{ end }}
     </ol>
 </div>
+</div>
 {{ end }}
 
 {{ block "trip" . }}
 <li class="border-t border-green-100 grid grid-cols-7 sm:grid-cols-3 gap-2 pt-1 pb-5">
     <div class="flex flex-col col-span-3 sm:col-span-1">
-        <span class="text-xs md:text-sm text-green-300 uppercase opacity-80 font-medium">Departs</span>
-        <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .DepartureTimeDisplay }} <span class="timeToCatch text-base font-normal" data-zero-time="{{ .OrderTime }}"></span></span>
+        <span class="text-xs md:text-sm text-blue-200 uppercase opacity-80 font-medium">Departs</span>
+        <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .DepartureTimeDisplay }} <span class="timeToDepart animate-pulse text-base font-normal" data-zero-time="{{ .OrderTime }}"></span></span>
     </div>
     <div class="flex flex-col col-span-2 sm:col-span-1">
-        <span class="text-xs md:text-sm text-yellow-200 uppercase opacity-80 font-medium">Travels</span>
+        <span class="text-xs md:text-sm text-green-300 uppercase opacity-80 font-medium">Travels</span>
         <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .Duration }}</span>
     </div>
     <div class="flex flex-col col-span-2 sm:col-span-1 items-end sm:items-start">
@@ -139,4 +146,12 @@
         <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .ArrivalTimeDisplay }}</span>
     </div>
 </li>
+{{ end }}
+
+{{ block "footer" . }}
+<footer class="p-6 bg-stone-950 flex flex-col gap-1 justify-center items-center text-sm text-gray-400">
+    <p>Made with 💚 in Hamilton</p>
+    <p>View source on <a href="https://github.com/jasonflorentino/ggts/" target="_blank" rel="noreferrer" class="underline text-green-300">GitHub</a></p>
+    <p>Not affiliated with <a href="https://www.gotransit.com/" target="_blank" rel="noreferrer" class="underline text-green-300">GO Transit</a></p>
+</footer>
 {{ end }}
