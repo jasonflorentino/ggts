@@ -10,7 +10,7 @@
     <link href="style.css" rel="stylesheet">
 </head>
 <body class="bg-stone-900 text-green-200 selection:bg-green-300 selection:text-green-900">
-    <header class="p-2 sm:p-4 border-b-2 border-green-200 bg-green-500">
+    <header class="p-2 sm:p-4 border-b-2 border-green-200 bg-green-600">
         <a href="{{ .GGTS_URL }}">
             <h1 class="text-2xl text-green-100 font-bold sm:text-3xl md:text-4xl">🚆 GoGoTrainSchedule</h1>
         </a>
@@ -23,10 +23,12 @@
                 {{ template "selectFrom" . }}
             </div>
             <div class="flex items-center w-full">
-                <label for="toStop" class="block min-w-12 md:text-lg">To</label>
+                <label for="toStop" class="block min-w-12 md:text-lg drop-shadow-md">To</label>
                 {{ template "selectTo" . }}
             </div>
         </form>
+    
+        {{ template "otherway" . }}
     
         <section class="mt-4 sm:mt-6 md:mt-8">
             {{ template "timetable" . }}
@@ -70,6 +72,17 @@
     </script>
 </body>
 </html>
+{{ end }}
+
+{{ block "otherway" . }}
+    <div id="otherway" hx-swap-oob="true" class="fixed bottom-6 left-4 z-10 sm:bottom-8 sm:left-auto sm:right-6 lg:bottom-10 lg:right-8">
+        {{ if .To.Code }}
+            <a href="/?fromStop={{ .To.Code }}&toStop={{ .From.Code }}" class="p-2.5 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
+                <span class="hidden sm:inline-block sm:pr-0.5">🔄</span>
+                Other Way
+            </a>
+        {{ end }}
+    </div>
 {{ end }}
 
 {{ block "destinationOption" . }}
@@ -149,7 +162,7 @@
 {{ end }}
 
 {{ block "footer" . }}
-<footer class="p-6 bg-stone-950 flex flex-col gap-1 justify-center items-center text-sm text-gray-400">
+<footer class="p-6 bg-stone-950 flex flex-col gap-1 justify-center items-end sm:items-center text-sm text-gray-400">
     <p>Made with 💚 in Hamilton</p>
     <p>View source on <a href="https://github.com/jasonflorentino/ggts/" target="_blank" rel="noreferrer" class="underline text-green-300">GitHub</a></p>
     <p>Not affiliated with <a href="https://www.gotransit.com/" target="_blank" rel="noreferrer" class="underline text-green-300">GO Transit</a></p>

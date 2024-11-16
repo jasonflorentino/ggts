@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -18,6 +19,10 @@ import (
 
 type Templates struct {
 	templates *template.Template
+}
+
+func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+	return t.templates.ExecuteTemplate(w, name, data)
 }
 
 func newTemplate() *Templates {
@@ -38,6 +43,21 @@ type Page struct {
 	GGTS_URL         string
 }
 
+func (p Page) String() string {
+	return fmt.Sprintf(
+		"DestinationsFrom: %v, DestinationsTo: %v, ErrorCode: %d, ErrorMessage: %s, Timetable: %v, From: %v, To: %v, GGTS_TITLE: %s, GGTS_URL: %s",
+		p.DestinationsFrom,
+		p.DestinationsTo,
+		p.ErrorCode,
+		p.ErrorMessage,
+		p.Timetable,
+		p.From,
+		p.To,
+		p.GGTS_TITLE,
+		p.GGTS_URL,
+	)
+}
+
 func NewPage() Page {
 	return Page{
 		Timetable:  gotrans.Timetable{},
@@ -46,25 +66,9 @@ func NewPage() Page {
 	}
 }
 
-func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.templates.ExecuteTemplate(w, name, data)
-}
-
 func defaultDate() string {
 	now := time.Now()
 	return now.Format("2006-01-02")
-}
-
-func customHTTPErrorHandler(err error, c echo.Context) {
-	code := http.StatusInternalServerError
-	if he, ok := err.(*echo.HTTPError); ok {
-		code = he.Code
-	}
-	log.To(c).Error(err)
-	page := NewPage()
-	page.ErrorCode = code
-	page.ErrorMessage = http.StatusText(code)
-	c.Render(code, "error", page)
 }
 
 func defaultIfEmpty(value, defaultValue string) string {
@@ -93,6 +97,31 @@ func defaultTo() gotrans.Destination {
 		defaultStop = gotrans.Union
 	}
 	return defaultStop
+}
+
+func customHTTPErrorHandler(err error, c echo.Context) {
+	code := http.StatusInternalServerError
+	if he, ok := err.(*echo.HTTPError); ok {
+		code = he.Code
+	}
+	log.To(c).Error(err)
+	page := NewPage()
+	page.ErrorCode = code
+	page.ErrorMessage = http.StatusText(code)
+	c.Render(code, "error", page)
+}
+
+func renderTemplates(c echo.Context, blocks []string, page Page) (string, error) {
+	var buf bytes.Buffer
+	var builder strings.Builder
+	for _, block := range blocks {
+		buf.Reset()
+		if err := c.Echo().Renderer.Render(&buf, block, page, c); err != nil {
+			return "", err
+		}
+		builder.WriteString(buf.String())
+	}
+	return builder.String(), nil
 }
 
 func main() {
@@ -144,7 +173,14 @@ func handleTrips(c echo.Context) error {
 		return err
 	}
 	page.Timetable = timetable
-	return c.Render(http.StatusOK, "timetable", page)
+	page.To.Code = toStop
+	page.From.Code = fromStop
+
+	document, err := renderTemplates(c, []string{"timetable", "otherway"}, page)
+	if err != nil {
+		return err
+	}
+	return c.HTML(http.StatusOK, document)
 }
 
 func handleTo(c echo.Context) error {
@@ -162,19 +198,11 @@ func handleTo(c echo.Context) error {
 	dests = append(gotrans.Destinations{gotrans.Destination{Code: "", Name: "Where to?"}}, dests...)
 	page.DestinationsTo = dests.SetSelected(dests[0].Code)
 
-	var buf bytes.Buffer
-	if err := c.Echo().Renderer.Render(&buf, "selectTo", page, c); err != nil {
+	document, err := renderTemplates(c, []string{"selectTo", "otherway", "timetable"}, page)
+	if err != nil {
 		return err
 	}
-	selectTo := buf.String()
-
-	buf.Reset()
-	if err := c.Echo().Renderer.Render(&buf, "timetable", page, c); err != nil {
-		return err
-	}
-	timetable := buf.String()
-
-	return c.HTML(http.StatusOK, selectTo+timetable)
+	return c.HTML(http.StatusOK, document)
 }
 
 func handleRoot(c echo.Context) error {
