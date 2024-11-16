@@ -9,11 +9,14 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚆</text></svg>" />
     <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
     <link href="style.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body class="bg-stone-900 text-green-200 selection:bg-green-300 selection:text-green-900">
     <header class="p-2 sm:p-4 border-b-2 border-green-200 bg-green-600">
         <a href="{{ .GGTS_URL }}">
-            <h1 class="text-2xl text-green-100 font-bold sm:text-3xl md:text-4xl">🚆 GoGoTrainSchedule</h1>
+            <h1 class="text-2xl pt-1 text-green-100 font-bold sm:text-3xl md:text-4xl">🚆 GoGoTrainSchedule</h1>
         </a>
     </header>
 
@@ -78,7 +81,7 @@
 {{ block "otherway" . }}
     <div id="otherway" hx-swap-oob="true" class="fixed bottom-6 left-4 z-10 sm:bottom-8 sm:left-auto sm:right-6 lg:bottom-10 lg:right-8">
         {{ if .To.Code }}
-            <a href="/?fromStop={{ .To.Code }}&toStop={{ .From.Code }}" class="p-2.5 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
+            <a href="/?fromStop={{ .To.Code }}&toStop={{ .From.Code }}" class="p-2.5 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
                 <span class="hidden sm:inline-block sm:pr-0.5">🔄</span>
                 Other Way
             </a>
@@ -99,7 +102,7 @@
     hx-select-oob="#timetable"
     id="fromStop"
     name="fromStop" 
-    class="p-3 block h-12 rounded text-lg font-medium md:text-xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+    class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
 	{{ range .DestinationsFrom }}
 		{{ template "destinationOption" . }}
@@ -115,7 +118,7 @@
     hx-include="#fromStop"
     name="toStop" 
     id="toStop"
-    class="p-3 block h-12 rounded text-lg font-medium md:text-xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+    class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
 	{{ range .DestinationsTo }}
 		{{ template "destinationOption" . }}
@@ -149,21 +152,21 @@
 <li class="border-t border-green-100 grid grid-cols-7 sm:grid-cols-3 gap-2 pt-1 pb-5">
     <div class="flex flex-col col-span-3 sm:col-span-1">
         <span class="text-xs md:text-sm text-blue-200 uppercase opacity-80 font-medium">Departs</span>
-        <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .DepartureTimeDisplay }} <span class="timeToDepart animate-pulse text-base font-normal" data-zero-time="{{ .OrderTime }}"></span></span>
+        <span class="text-xl font-medium sm:text-2xl md:text-3xl">{{ .DepartureTimeDisplay }} <span class="timeToDepart animate-pulse text-base font-normal" data-zero-time="{{ .OrderTime }}"></span></span>
     </div>
     <div class="flex flex-col col-span-2 sm:col-span-1">
         <span class="text-xs md:text-sm text-green-300 uppercase opacity-80 font-medium">Travels</span>
-        <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .Duration }}</span>
+        <span class="text-xl font-medium sm:text-2xl md:text-3xl">{{ .Duration }}</span>
     </div>
     <div class="flex flex-col col-span-2 sm:col-span-1 items-end sm:items-start">
         <span class="text-xs md:text-sm text-red-200 uppercase opacity-80 font-medium">Arrives</span>
-        <span class="text-lg font-medium sm:text-xl md:text-2xl">{{ .ArrivalTimeDisplay }}</span>
+        <span class="text-xl font-medium sm:text-2xl md:text-3xl">{{ .ArrivalTimeDisplay }}</span>
     </div>
 </li>
 {{ end }}
 
 {{ block "footer" . }}
-<footer class="p-6 bg-stone-950 flex flex-col gap-1 justify-center items-end sm:items-center text-sm text-gray-400">
+<footer class="p-6 bg-stone-950 flex flex-col gap-1 justify-center items-end sm:items-center text-sm md:text-base text-gray-400">
     <p>Made with 💚 in Hamilton</p>
     <p>View source on <a href="https://github.com/jasonflorentino/ggts/" target="_blank" rel="noreferrer" class="underline text-green-300">GitHub</a></p>
     <p>Not affiliated with <a href="https://www.gotransit.com/" target="_blank" rel="noreferrer" class="underline text-green-300">GO Transit</a></p>
