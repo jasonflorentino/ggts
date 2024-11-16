@@ -25,6 +25,8 @@ if [ ! -e $ENV_FILE_OUT ]; then
   cp $ENV_FILE_TPT $ENV_FILE_OUT
   echo "Please ensure $ENV_FILE_OUT is correct before continuing"
   exit 1
+else 
+  echo ".env file found."
 fi
 
 ENV_LC_SRC=$(wc -l < $ENV_FILE_TPT)
@@ -58,6 +60,8 @@ if [ ! -e "$LOGFILE_P" ]; then
   echo "No file $LOGFILE_P. Creating it..."
   touch $LOGFILE_P
   chmod 666 $LOGFILE_P
+else
+  echo "Existing log file found."
 fi
 
 echo ""
