@@ -5,18 +5,16 @@ import (
 	"fmt"
 	"ggts/lib/log"
 	"net/http"
+	"time"
 
-	lru "github.com/hashicorp/golang-lru/v2"
+	"github.com/hashicorp/golang-lru/v2/expirable"
 
 	"github.com/labstack/echo/v4"
 )
 
-func initDestinationsCache() *lru.Cache[string, Destinations] {
+func initDestinationsCache() *expirable.LRU[string, Destinations] {
 	const MAX_ITEMS = 10
-	destinationCache, err := lru.New[string, Destinations](MAX_ITEMS)
-	if err != nil {
-		panic(fmt.Errorf("couldn't init destinations cache %s", err))
-	}
+	destinationCache := expirable.NewLRU[string, Destinations](MAX_ITEMS, nil, time.Hour*1)
 	return destinationCache
 }
 

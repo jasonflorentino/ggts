@@ -44,3 +44,16 @@ open http://localhost:5400
 # Deployment
 I'm running this out of a cheap linux box that already has deps installed.
 To deploy the latest changes, ssh in there, pull main, and run `./update.sh`
+
+# Notes
+
+## Log Level
+You can set the log level from the `.env` file. This can be helpful to hide verbose logs during dev, or allow more logs in prod.
+```
+GGTS_LOGLEVEL=1 # Debug 
+GGTS_LOGLEVEL=2 # Info
+GGTS_LOGLEVEL=3 # Warn 
+GGTS_LOGLEVEL=4 # Error 
+GGTS_LOGLEVEL=5 # Off 
+...
+```

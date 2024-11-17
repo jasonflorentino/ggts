@@ -10,17 +10,14 @@ import (
 	"strings"
 	"time"
 
-	lru "github.com/hashicorp/golang-lru/v2"
+	"github.com/hashicorp/golang-lru/v2/expirable"
 
 	"github.com/labstack/echo/v4"
 )
 
-func initTimetableCache() *lru.Cache[string, Timetable] {
+func initTimetableCache() *expirable.LRU[string, Timetable] {
 	const MAX_ITEMS = 10
-	timetableCache, err := lru.New[string, Timetable](MAX_ITEMS)
-	if err != nil {
-		panic(fmt.Errorf("couldn't init timetable cache %s", err))
-	}
+	timetableCache := expirable.NewLRU[string, Timetable](MAX_ITEMS, nil, time.Hour*1)
 	return timetableCache
 }
 

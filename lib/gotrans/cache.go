@@ -1,12 +1,12 @@
 package gotrans
 
-import lru "github.com/hashicorp/golang-lru/v2"
+import "github.com/hashicorp/golang-lru/v2/expirable"
 
 var Cache Caches
 
 type Caches struct {
-	Destinations *lru.Cache[string, Destinations]
-	Timetable    *lru.Cache[string, Timetable]
+	Destinations *expirable.LRU[string, Destinations]
+	Timetable    *expirable.LRU[string, Timetable]
 }
 
 func InitCache() {

@@ -74,6 +74,10 @@ func IsProd() bool {
 	return env["GGTS_ENV"] == "production"
 }
 
+func NotProd() bool {
+	return env["GGTS_ENV"] != "production"
+}
+
 func LogFile() string {
 	return env["GGTS_LOGFILE"]
 }
@@ -88,10 +92,6 @@ func LogLevel() gommonlog.Lvl {
 		return gommonlog.Lvl(0)
 	}
 	return gommonlog.Lvl(li)
-}
-
-func NotProd() bool {
-	return env["GGTS_ENV"] != "production"
 }
 
 func Port() string {
