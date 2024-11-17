@@ -14,7 +14,7 @@ All this stress just to have an excuse to try out [HTMX](https://htmx.org/).
 
 — Jason (Nov 15, 2024)
 
-<sup>1</sup> Not every train goes on a line goes to the same stops. This is true for the terminal stop too. So to find out if a train is going _that far_ you have to wait around watching the a list of stops cycle through to the end, 3 stops at a time.
+<sup>1</sup> Not every train on a line makes all the same stops. This is true for terminal stops too. So to find out if a train is going _that far_ you have to wait around watching the list of stops cycle through to the end, 3 at a time. Oh, that one isn't going where you want? Now let's wait for the next train's stops to come around.
 
 # Development
 You will need:
