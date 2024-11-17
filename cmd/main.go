@@ -157,12 +157,12 @@ func main() {
 
 func handleTrips(c echo.Context) error {
 	page := NewPage()
-	fromStop := c.QueryParam("fromStop")
-	toStop := c.QueryParam("toStop")
+	fromStop := c.QueryParam("from")
+	toStop := c.QueryParam("to")
 	date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
 	c.Response().Header().Add(
 		"HX-Push-Url",
-		fmt.Sprintf("?fromStop=%s&toStop=%s", fromStop, toStop),
+		fmt.Sprintf("?froms=%s&to=%s", fromStop, toStop),
 	)
 	timetable, err := gotrans.FetchTimetable(c, fromStop, toStop, date)
 	if err != nil {
@@ -185,11 +185,11 @@ func handleTrips(c echo.Context) error {
 
 func handleTo(c echo.Context) error {
 	page := NewPage()
-	fromStop := c.QueryParam("fromStop")
+	fromStop := c.QueryParam("from")
 	date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
 	c.Response().Header().Add(
 		"HX-Push-Url",
-		fmt.Sprintf("?fromStop=%s", fromStop),
+		fmt.Sprintf("?from=%s", fromStop),
 	)
 	dests, err := gotrans.FetchDestinations(c, fromStop, date)
 	if err != nil {
@@ -208,8 +208,8 @@ func handleTo(c echo.Context) error {
 func handleRoot(c echo.Context) error {
 	page := NewPage()
 
-	fromStop := defaultIfEmpty(c.QueryParam("fromStop"), defaultFrom().Code)
-	toStop := defaultIfEmpty(c.QueryParam("toStop"), defaultTo().Code)
+	fromStop := defaultIfEmpty(c.QueryParam("from"), defaultFrom().Code)
+	toStop := defaultIfEmpty(c.QueryParam("to"), defaultTo().Code)
 	date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
 
 	// Fetch destination list for FROM and TO drop downs

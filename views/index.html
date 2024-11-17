@@ -81,7 +81,7 @@
 {{ block "otherway" . }}
     <div id="otherway" hx-swap-oob="true" class="fixed bottom-6 left-4 z-10 sm:bottom-8 sm:left-auto sm:right-6 lg:bottom-10 lg:right-8">
         {{ if .To.Code }}
-            <a href="/?fromStop={{ .To.Code }}&toStop={{ .From.Code }}" class="p-2.5 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
+            <a href="/?from={{ .To.Code }}&to={{ .From.Code }}" class="p-2.5 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
                 <span class="hidden sm:inline-block sm:pr-0.5">🔄</span>
                 Other Way
             </a>
@@ -101,7 +101,7 @@
     hx-include="#toStop"
     hx-select-oob="#timetable"
     id="fromStop"
-    name="fromStop" 
+    name="from" 
     class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
 	{{ range .DestinationsFrom }}
@@ -116,7 +116,7 @@
     hx-target="#timetable"
     hx-swap="outerHTML"
     hx-include="#fromStop"
-    name="toStop" 
+    name="to" 
     id="toStop"
     class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >

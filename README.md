@@ -38,7 +38,7 @@ air
 
 - The server will be running on the port defined in your `.env`.
 ```
-open http://locahost:5400
+open http://localhost:5400
 ```
 
 # Deployment
