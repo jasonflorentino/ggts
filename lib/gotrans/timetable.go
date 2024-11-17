@@ -15,7 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func makeTimetableCache() *lru.Cache[string, Timetable] {
+func initTimetableCache() *lru.Cache[string, Timetable] {
 	const MAX_ITEMS = 10
 	timetableCache, err := lru.New[string, Timetable](MAX_ITEMS)
 	if err != nil {

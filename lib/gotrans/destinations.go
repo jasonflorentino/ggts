@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func makeDestinationsCache() *lru.Cache[string, Destinations] {
+func initDestinationsCache() *lru.Cache[string, Destinations] {
 	const MAX_ITEMS = 10
 	destinationCache, err := lru.New[string, Destinations](MAX_ITEMS)
 	if err != nil {
@@ -69,19 +69,15 @@ func FetchDestinations(c echo.Context, destinationCode, date string) (Destinatio
 	return railDestinations, nil
 }
 
-// Fetches Union Station's destinations as the default list since it is
-// a central hub through which GO Trains connect.
+// Fetches Union Station's destinations as the default list of origins.
+// We assume that if a station reachable from Union, a train trip can start there.
 // Union is a Rail station only so there will not be any bus destinations.
 // This list won't include Union Station itself so we should add it to complete the list.
 func FetchDestinationsDefault(c echo.Context, date string) (Destinations, error) {
-	cacheKey := toDestinationsKey(StationCode.Union, date)
+	cacheKey := toDestinationsKey("DEFAULT", date)
 	if Cache.Destinations.Contains(cacheKey) {
 		log.To(c).Infof("Destinations Cache HIT: %s", cacheKey)
 		cachedDests, _ := Cache.Destinations.Get(cacheKey)
-		cachedDests, updated := includeUnionInDestinations(cachedDests)
-		if updated {
-			Cache.Destinations.Add(cacheKey, cachedDests)
-		}
 		return cachedDests, nil
 	}
 	log.To(c).Infof("Destinations Cache MISS: %s", cacheKey)
@@ -101,7 +97,7 @@ func includeUnionInDestinations(destinations Destinations) (Destinations, bool) 
 	updated := false
 	unionIdx := destinations.IndexOfCode(Union.Code)
 	if unionIdx == -1 {
-		destinations = append(destinations, Union)
+		destinations = append(Destinations{Union}, destinations...)
 		destinations.Sort()
 		updated = true
 	}

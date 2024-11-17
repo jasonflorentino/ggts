@@ -70,7 +70,7 @@ ENV_K=GGTS_ENV
 ENV_V=$(grep "$ENV_K" "$ENV_FILE_OUT" | sed -E "s/$ENV_K=//")
 echo "env: $ENV_V"
 if [ "$ENV_V" == "production" ]; then
-  echo "Restarting service"
+  echo "Restarting ggts.service"
   systemctl restart ggts.service
 else
   echo "No process to restart"

@@ -11,7 +11,7 @@ type Caches struct {
 
 func InitCache() {
 	Cache = Caches{
-		Destinations: makeDestinationsCache(),
-		Timetable:    makeTimetableCache(),
+		Destinations: initDestinationsCache(),
+		Timetable:    initTimetableCache(),
 	}
 }

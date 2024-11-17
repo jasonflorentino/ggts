@@ -79,7 +79,7 @@ func LogFile() string {
 }
 
 func LogLevel() gommonlog.Lvl {
-	l := env["GGTS_LOGFILE"]
+	l := env["GGTS_LOGLEVEL"]
 	if l == "" {
 		return gommonlog.Lvl(0)
 	}

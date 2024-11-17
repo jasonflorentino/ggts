@@ -221,15 +221,11 @@ func handleRoot(c echo.Context) error {
 	}
 	page.DestinationsFrom = destinationsDefault
 
-	if fromStop == gotrans.StationCode.Union {
-		page.DestinationsTo = destinationsDefault
-	} else {
-		destinations, err := gotrans.FetchDestinations(c, fromStop, date)
-		if err != nil {
-			return err
-		}
-		page.DestinationsTo = destinations
+	destinations, err := gotrans.FetchDestinations(c, fromStop, date)
+	if err != nil {
+		return err
 	}
+	page.DestinationsTo = destinations
 
 	// Set "selected" for the drop down
 
