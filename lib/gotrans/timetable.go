@@ -76,8 +76,8 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 }
 
 func TransformTimetableForClient(timetable Timetable) (Timetable, error) {
-	datestr := ToDatestring(timetable.Date)
-	timetable.Date = datestr
+	dateDisplay := ToDateDisplay(timetable.Date)
+	timetable.X_DateDisplay = dateDisplay
 	trips, err := FilterTrips(timetable.Trips)
 	if err != nil {
 		return timetable, err
@@ -126,11 +126,20 @@ func ToDurationDisplay(d string) string {
 	}
 }
 
-func ToDatestring(s string) string {
+// parseTime tries a couple different formats since GoTransit is not consistent with that it sends
+func parseTime(s string) (time.Time, error) {
 	t, err := time.ParseInLocation("2006-01-02T15:04:05", s, env.Location())
 	if err != nil {
 		t, err = time.ParseInLocation("2006-01-02T15:04:05-07:00", s, env.Location())
 	}
+	if err != nil {
+		return t, err
+	}
+	return t, nil
+}
+
+func ToDateDisplay(s string) string {
+	t, err := parseTime(s)
 	if err != nil {
 		return s
 	}

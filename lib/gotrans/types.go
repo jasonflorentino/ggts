@@ -128,6 +128,7 @@ type Timetable struct {
 	ServiceCode          string        `json:"serviceCode"`
 	ServiceName          string        `json:"serviceName"`
 	Trips                []Trip        `json:"trips"`
+	X_DateDisplay        string
 }
 
 type TransitType int
