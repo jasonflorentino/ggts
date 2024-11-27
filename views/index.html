@@ -21,18 +21,28 @@
     </header>
 
     <main class="p-4 min-h-svh">
-        <form class="flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6 sm:flex-row">
-            <div class="flex items-center w-full">
-                <label for="fromStop" class="block min-w-12 md:text-lg">From</label>
-                {{ template "selectFrom" . }}
+        <form class="flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6 ">
+            <div class="flex gap-4 flex-col sm:flex-row">
+                <div class="flex items-center w-full">
+                    <label for="fromStop" class="block min-w-12 md:text-lg">From</label>
+                    {{ template "selectFrom" . }}
+                </div>
+                <div class="flex items-center w-full">
+                    <label for="toStop" class="block min-w-12 md:text-lg drop-shadow-md">To</label>
+                    {{ template "selectTo" . }}
+                </div>
             </div>
-            <div class="flex items-center w-full">
-                <label for="toStop" class="block min-w-12 md:text-lg drop-shadow-md">To</label>
-                {{ template "selectTo" . }}
+            <div id="dateBox" class="flex items-center w-full hidden">
+                <label for="date" class="block min-w-12 md:text-lg drop-shadow-md">Date</label>
+                {{ template "datePicker" . }}
             </div>
         </form>
     
-        {{ template "otherway" . }}
+
+        <div class="fixed bottom-6 left-4 z-10 sm:bottom-8 sm:left-auto sm:right-6 lg:bottom-10 lg:right-8 flex gap-2">
+            {{ template "otherway" . }}
+            {{ template "dateToggle" }}
+        </div>
     
         <section class="mt-4 sm:mt-6 md:mt-8">
             {{ template "timetable" . }}
@@ -73,19 +83,80 @@
                 el.innerText = `(${hrs > 0 ? hrs + "h" : ""  }${min - (hrs * 60)}m)`;
             })
         }
+
+        function toggleDatePicker() {
+            const dateBox = document.getElementById('dateBox');
+            const dateToggle= document.getElementById('dateToggle');
+            dateBox.classList.toggle('hidden');
+            dateToggle.classList.toggle('bg-gray-600');
+            dateToggle.classList.toggle('bg-green-600');
+        }
     </script>
 </body>
 </html>
 {{ end }}
 
+{{ block "datePicker" . }}
+    <div id="datePicker" class="flex gap-2 w-full">
+        <select
+            name="month"
+            id="month"
+            class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+            <option value="01">January</option>
+            <option value="02">February</option>
+            <option value="03">March</option>
+            <option value="04">April</option>
+            <option value="05">May</option>
+            <option value="06">June</option>
+            <option value="07">July</option>
+            <option value="08">August</option>
+            <option value="09">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+        </select>
+        <select
+            name="day"
+            id="day"
+            class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+            <option value="01">1</option>
+            <option value="02">2</option>
+            <option value="03">3</option>
+            <option value="04">4</option>
+            <option value="05">5</option>
+            <option value="06">6</option>
+            <option value="07">7</option>
+        </select>
+        <select
+            name="year"
+            id="year"
+            class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+        </select>
+    </div>
+{{ end }}
+
 {{ block "otherway" . }}
-    <div id="otherway" hx-swap-oob="true" class="fixed bottom-6 left-4 z-10 sm:bottom-8 sm:left-auto sm:right-6 lg:bottom-10 lg:right-8">
+    <div id="otherway" hx-swap-oob="true">
         {{ if .To.Code }}
-            <a href="/?from={{ .To.Code }}&to={{ .From.Code }}" class="p-2.5 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
+            <a href="/?from={{ .To.Code }}&to={{ .From.Code }}" class="block pb-2 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
                 <span class="hidden sm:inline-block sm:pr-0.5">🔄</span>
                 Other Way
             </a>
         {{ end }}
+    </div>
+{{ end }}
+
+{{ block "dateToggle" . }}
+    <div>
+        <button id="dateToggle" onclick="toggleDatePicker()" class="pb-2 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-gray-600">
+            <span class="hidden sm:inline-block sm:pr-0.5">📅</span>
+            Date
+        </button>
     </div>
 {{ end }}
 
