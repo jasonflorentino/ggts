@@ -155,6 +155,7 @@ func main() {
 	e.Logger.Fatal(e.Start(":" + env.Port()))
 }
 
+// handleTrips responds with the timetable of trips.
 func handleTrips(c echo.Context) error {
 	page := NewPage()
 	fromStop := c.QueryParam("from")
@@ -183,6 +184,7 @@ func handleTrips(c echo.Context) error {
 	return c.HTML(http.StatusOK, document)
 }
 
+// handleTo responds with the list of destinations and clears the timetable.
 func handleTo(c echo.Context) error {
 	page := NewPage()
 	fromStop := c.QueryParam("from")
@@ -205,6 +207,7 @@ func handleTo(c echo.Context) error {
 	return c.HTML(http.StatusOK, document)
 }
 
+// handleRoot responds with the full document for the default options.
 func handleRoot(c echo.Context) error {
 	page := NewPage()
 
