@@ -7,9 +7,10 @@ import (
 )
 
 type DatePartOption struct {
+	IsSelected bool
+	Meta       string
 	Name       string
 	Val        string
-	IsSelected bool
 }
 
 type Day = DatePartOption
@@ -70,7 +71,13 @@ func NewDatePicker(today string, selected string) DatePicker {
 	for d := 1; d <= lastDayOfMonth(selectedTime).Day(); d += 1 {
 		name := fmt.Sprintf("%d", d)
 		val := fmt.Sprintf("%02d", d)
-		days = append(days, Day{Name: name, Val: val, IsSelected: d == selectedTime.Day()})
+		day := Day{Name: name, Val: val, IsSelected: d == selectedTime.Day()}
+		dTime := time.Date(selectedTime.Year(), selectedTime.Month(), d, 0, 0, 0, 0, selectedTime.Location())
+		// Mark Sundays
+		if dTime.Weekday() == time.Weekday(0) {
+			day.Meta = dTime.Format("(Monday)")
+		}
+		days = append(days, day)
 	}
 	datePicker.Days = days
 

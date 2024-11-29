@@ -98,7 +98,7 @@
 {{ end }}
 
 {{ block "datePicker" . }}
-    <div id="datePicker" class="flex flex-col gap-2 w-full">
+    <div id="datePicker" class="flex flex-col lg:flex-row gap-2 w-full items-center">
         <div  class="flex gap-2 w-full">
             <select
                 name="month"
@@ -115,7 +115,7 @@
                 class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
             {{ range .DatePicker.Days }}
-                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
+                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }} {{ if .Meta }}<span>{{ .Meta }}</span>{{ end }}</option>
             {{ end }}
             </select>
             <select
@@ -128,8 +128,8 @@
             {{ end }}
             </select>
         </div>
-        <div>
-            <button type="button" class="bg-yellow-600 text-yellow-100 rounded p-2 w-full disabled:opacity-50 disabled:cursor-not-allowed">Change Date</button>
+        <div class="w-full lg:w-1/2">
+            <button type="button" class="bg-yellow-600 text-yellow-100 md:text-lg lg:text-xl rounded p-2 w-full disabled:opacity-50 disabled:cursor-not-allowed">Change Date</button>
         </div>
     </div>
 {{ end }}
