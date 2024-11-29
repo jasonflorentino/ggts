@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"ggts/lib"
 	"ggts/lib/env"
 	"ggts/lib/gotrans"
 	"ggts/lib/log"
@@ -32,6 +33,7 @@ func newTemplate() *Templates {
 }
 
 type Page struct {
+	DatePicker       lib.DatePicker
 	DestinationsFrom gotrans.Destinations
 	DestinationsTo   gotrans.Destinations
 	ErrorCode        int
@@ -58,8 +60,9 @@ func (p Page) String() string {
 	)
 }
 
-func NewPage() Page {
+func NewPage(today string, selected string) Page {
 	return Page{
+		DatePicker: lib.NewDatePicker(today, selected),
 		Timetable:  gotrans.Timetable{},
 		GGTS_TITLE: env.Title(),
 		GGTS_URL:   env.URL(),
@@ -105,7 +108,7 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 		code = he.Code
 	}
 	log.To(c).Error(err)
-	page := NewPage()
+	page := NewPage(defaultDate(), defaultDate())
 	page.ErrorCode = code
 	page.ErrorMessage = http.StatusText(code)
 	c.Render(code, "error", page)
@@ -157,10 +160,10 @@ func main() {
 
 // handleTrips responds with the timetable of trips.
 func handleTrips(c echo.Context) error {
-	page := NewPage()
 	fromStop := c.QueryParam("from")
 	toStop := c.QueryParam("to")
 	date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
+	page := NewPage(defaultDate(), date)
 	c.Response().Header().Add(
 		"HX-Push-Url",
 		fmt.Sprintf("?froms=%s&to=%s", fromStop, toStop),
@@ -186,9 +189,9 @@ func handleTrips(c echo.Context) error {
 
 // handleTo responds with the list of destinations and clears the timetable.
 func handleTo(c echo.Context) error {
-	page := NewPage()
 	fromStop := c.QueryParam("from")
 	date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
+	page := NewPage(defaultDate(), date)
 	c.Response().Header().Add(
 		"HX-Push-Url",
 		fmt.Sprintf("?from=%s", fromStop),
@@ -209,12 +212,13 @@ func handleTo(c echo.Context) error {
 
 // handleRoot responds with the full document for the default options.
 func handleRoot(c echo.Context) error {
-	page := NewPage()
 
 	fromStop := defaultIfEmpty(c.QueryParam("from"), defaultFrom().Code)
 	toStop := defaultIfEmpty(c.QueryParam("to"), defaultTo().Code)
 	date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
 
+	page := NewPage(defaultDate(), date)
+	c.Echo().Logger.Infof("datepicker: %v", page.DatePicker)
 	// Fetch destination list for FROM and TO drop downs
 
 	// Always fetch desinations from Union for our default list of stations

@@ -36,6 +36,7 @@
                 <label for="date" class="block min-w-12 md:text-lg drop-shadow-md">Date</label>
                 {{ template "datePicker" . }}
             </div>
+            </div>
         </form>
     
 
@@ -97,46 +98,39 @@
 {{ end }}
 
 {{ block "datePicker" . }}
-    <div id="datePicker" class="flex gap-2 w-full">
-        <select
-            name="month"
-            id="month"
-            class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-            <option value="01">January</option>
-            <option value="02">February</option>
-            <option value="03">March</option>
-            <option value="04">April</option>
-            <option value="05">May</option>
-            <option value="06">June</option>
-            <option value="07">July</option>
-            <option value="08">August</option>
-            <option value="09">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-        </select>
-        <select
-            name="day"
-            id="day"
-            class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-            <option value="01">1</option>
-            <option value="02">2</option>
-            <option value="03">3</option>
-            <option value="04">4</option>
-            <option value="05">5</option>
-            <option value="06">6</option>
-            <option value="07">7</option>
-        </select>
-        <select
-            name="year"
-            id="year"
-            class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-            <option value="2024">2024</option>
-            <option value="2025">2025</option>
-        </select>
+    <div id="datePicker" class="flex flex-col gap-2 w-full">
+        <div  class="flex gap-2 w-full">
+            <select
+                name="month"
+                id="month"
+                class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+            {{ range .DatePicker.Months }}
+                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
+            {{ end }}
+            </select>
+            <select
+                name="day"
+                id="day"
+                class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+            {{ range .DatePicker.Days }}
+                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
+            {{ end }}
+            </select>
+            <select
+                name="year"
+                id="year"
+                class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+            {{ range .DatePicker.Years }}
+                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
+            {{ end }}
+            </select>
+        </div>
+        <div>
+            <button type="button" class="bg-yellow-600 text-yellow-100 rounded p-2 w-full disabled:opacity-50 disabled:cursor-not-allowed">Change Date</button>
+        </div>
     </div>
 {{ end }}
 
