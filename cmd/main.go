@@ -16,6 +16,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/time/rate"
 )
 
 type Templates struct {
@@ -136,6 +137,11 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
+	e.Use(middleware.Gzip())
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(20))))
+	// TODO: Ensure API won't be affected before implementing this:
+	// e.Use(middleware.BodyLimit("2M"))
+
 	if env.IsProd() {
 		e.HideBanner = true
 		e.Logger.SetOutput(log.ToFile(env.LogFile()))
