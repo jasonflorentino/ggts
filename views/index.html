@@ -55,25 +55,6 @@
     <script>
         let interval;
         
-        document.addEventListener("DOMContentLoaded", (event) => {
-            updateTimeToDepart();
-            interval = setInterval(updateTimeToDepart, 1000 * 5);
-            
-            document.body.addEventListener("htmx:beforeSwap", (evt) => {
-                if (evt.detail.xhr.status === 422) {
-                    evt.detail.shouldSwap = true;
-                    evt.detail.isError = false;
-                }
-            })
-            document.body.addEventListener("htmx:afterSwap", (evt) => {
-                if (evt.detail.target.id === "timetable") {
-                    clearInterval(interval);
-                    updateTimeToDepart();
-                    interval = setInterval(updateTimeToDepart, 1000 * 5);
-                }
-            })
-        })
-
         function updateTimeToDepart() {
             const allTimeLefts = Array.from(document.querySelectorAll('.timeToDepart'));
             allTimeLefts.forEach((el) => {
@@ -92,6 +73,34 @@
             dateToggle.classList.toggle('bg-gray-600');
             dateToggle.classList.toggle('bg-green-600');
         }
+        
+        function handleDatePickerDisabled() {
+            const m = document.getElementById("month");
+            const d = document.getElementById("day");
+            const y = document.getElementById("year");
+            const btn = document.getElementById("datePickerButton");
+            btn.disabled = btn.dataset.renderedDate === `${y.value}-${m.value}-${d.value}`;
+        }
+        
+        document.addEventListener("DOMContentLoaded", (event) => {
+            updateTimeToDepart();
+            handleDatePickerDisabled();
+            interval = setInterval(updateTimeToDepart, 1000 * 5);
+            
+            document.body.addEventListener("htmx:beforeSwap", (evt) => {
+                if (evt.detail.xhr.status === 422) {
+                    evt.detail.shouldSwap = true;
+                    evt.detail.isError = false;
+                }
+            })
+            document.body.addEventListener("htmx:afterSwap", (evt) => {
+                if (evt.detail.target.id === "timetable") {
+                    clearInterval(interval);
+                    updateTimeToDepart();
+                    interval = setInterval(updateTimeToDepart, 1000 * 5);
+                }
+            })
+        })
     </script>
 </body>
 </html>
@@ -104,6 +113,7 @@
                 name="month"
                 id="month"
                 class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+                onchange="handleDatePickerDisabled()"
             >
             {{ range .DatePicker.Months }}
                 <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
@@ -113,6 +123,7 @@
                 name="day"
                 id="day"
                 class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+                onchange="handleDatePickerDisabled()"
             >
             {{ range .DatePicker.Days }}
                 <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }} {{ if .Meta }}<span>{{ .Meta }}</span>{{ end }}</option>
@@ -122,6 +133,7 @@
                 name="year"
                 id="year"
                 class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+                onchange="handleDatePickerDisabled()"
             >
             {{ range .DatePicker.Years }}
                 <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
@@ -129,7 +141,14 @@
             </select>
         </div>
         <div class="w-full lg:w-1/2">
-            <button type="button" class="bg-yellow-600 text-yellow-100 md:text-lg lg:text-xl rounded p-2 w-full disabled:opacity-50 disabled:cursor-not-allowed">Change Date</button>
+            <button
+                id="datePickerButton"
+                type="button"
+                data-rendered-date="{{ .DatePicker.RenderedDate }}"
+                class="bg-yellow-600 text-yellow-100 md:text-lg lg:text-xl rounded p-2 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                Change Date
+            </button>
         </div>
     </div>
 {{ end }}
