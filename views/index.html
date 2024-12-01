@@ -21,18 +21,29 @@
     </header>
 
     <main class="p-4 min-h-svh">
-        <form class="flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6 sm:flex-row">
-            <div class="flex items-center w-full">
-                <label for="fromStop" class="block min-w-12 md:text-lg">From</label>
-                {{ template "selectFrom" . }}
+        <form class="flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6 ">
+            <div class="flex gap-4 flex-col sm:flex-row">
+                <div class="flex items-center w-full">
+                    <label for="fromStop" class="block min-w-12 md:text-lg">From</label>
+                    {{ template "selectFrom" . }}
+                </div>
+                <div class="flex items-center w-full">
+                    <label for="toStop" class="block min-w-12 md:text-lg drop-shadow-md">To</label>
+                    {{ template "selectTo" . }}
+                </div>
             </div>
-            <div class="flex items-center w-full">
-                <label for="toStop" class="block min-w-12 md:text-lg drop-shadow-md">To</label>
-                {{ template "selectTo" . }}
+            <div id="dateBox" class="flex items-center w-full hidden">
+                <label for="date" class="block min-w-12 md:text-lg drop-shadow-md">Date</label>
+                {{ template "datePicker" . }}
+            </div>
             </div>
         </form>
     
-        {{ template "otherway" . }}
+
+        <div class="fixed bottom-6 left-4 z-10 sm:bottom-8 sm:left-auto sm:right-6 lg:bottom-10 lg:right-8 flex gap-2">
+            {{ template "otherway" . }}
+            {{ template "dateToggle" }}
+        </div>
     
         <section class="mt-4 sm:mt-6 md:mt-8">
             {{ template "timetable" . }}
@@ -44,8 +55,48 @@
     <script>
         let interval;
         
+        function updateTimeToDepart() {
+            const allTimeLefts = Array.from(document.querySelectorAll('.timeToDepart'));
+            if (allTimeLefts.length) {
+                const now = Date.now();
+                const end = new Date(allTimeLefts[0].dataset.zeroTime).getTime();
+                if (end - now < 0) {
+                    return
+                }
+                if (end - now > 1000 * 60 * 60 * 24) {
+                    return
+                }
+            }
+            allTimeLefts.forEach((el) => {
+                const now = Date.now();
+                const end = new Date(el.dataset.zeroTime).getTime();
+                const min = Math.floor((end - now) / 1000 / 60);
+                const hrs = Math.floor(min / 60);
+                el.innerText = `(${hrs > 0 ? hrs + "h" : ""  }${min - (hrs * 60)}m)`;
+            })
+        }
+
+        function toggleDatePicker() {
+            const dateBox = document.getElementById('dateBox');
+            const dateToggle= document.getElementById('dateToggle');
+            dateBox.classList.toggle('hidden');
+            dateToggle.classList.toggle('bg-gray-600');
+            dateToggle.classList.toggle('bg-green-600');
+        }
+        
+        function handleDatePickerDisabled() {
+            const t = document.getElementById("renderedDate");
+            const m = document.getElementById("month");
+            const d = document.getElementById("day");
+            const y = document.getElementById("year");
+            const btn = document.getElementById("datePickerButton");
+            const date = `${y.value}-${m.value}-${d.value}`
+            btn.disabled = t.value === date || Date.now() >= new Date(date).getTime();
+        }
+        
         document.addEventListener("DOMContentLoaded", (event) => {
             updateTimeToDepart();
+            handleDatePickerDisabled();
             interval = setInterval(updateTimeToDepart, 1000 * 5);
             
             document.body.addEventListener("htmx:beforeSwap", (evt) => {
@@ -55,37 +106,100 @@
                 }
             })
             document.body.addEventListener("htmx:afterSwap", (evt) => {
-                if (evt.detail.target.id === "timetable") {
-                    clearInterval(interval);
-                    updateTimeToDepart();
-                    interval = setInterval(updateTimeToDepart, 1000 * 5);
+                switch (evt.detail.target.id) {
+                    case "timetable": {
+                        clearInterval(interval);
+                        updateTimeToDepart();
+                        interval = setInterval(updateTimeToDepart, 1000 * 5);
+                    }
+                    case "datePicker": {
+                        handleDatePickerDisabled();
+                    }
                 }
             })
         })
-
-        function updateTimeToDepart() {
-            const allTimeLefts = Array.from(document.querySelectorAll('.timeToDepart'));
-            allTimeLefts.forEach((el) => {
-                const now = Date.now();
-                const end = new Date(el.dataset.zeroTime).getTime();
-                const min = Math.floor((end - now) / 1000 / 60);
-                const hrs = Math.floor(min / 60);
-                el.innerText = `(${hrs > 0 ? hrs + "h" : ""  }${min - (hrs * 60)}m)`;
-            })
-        }
     </script>
 </body>
 </html>
 {{ end }}
 
+{{ block "datePicker" . }}
+    <div id="datePicker" class="flex flex-col lg:flex-row gap-2 w-full items-center">
+        <div  class="flex gap-2 w-full">
+            <select
+                id="month"
+                hx-get="/date-picker"
+                hx-include="#day, #year"
+                hx-swap="outerHTML"
+                hx-target="#datePicker"
+                name="month"
+                class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+                onchange="handleDatePickerDisabled()"
+            >
+            {{ range .DatePicker.Months }}
+                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
+            {{ end }}
+            </select>
+            <select
+                id="day"
+                name="day"
+                class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+                onchange="handleDatePickerDisabled()"
+            >
+            {{ range .DatePicker.Days }}
+                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }} {{ if .Meta }}<span>{{ .Meta }}</span>{{ end }}</option>
+            {{ end }}
+            </select>
+            <select
+                id="year"
+                hx-get="/date-picker"
+                hx-include="#month, #day"
+                hx-swap="outerHTML"
+                hx-target="#datePicker"
+                name="year"
+                class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+                onchange="handleDatePickerDisabled()"
+            >
+            {{ range .DatePicker.Years }}
+                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
+            {{ end }}
+            </select>
+        </div>
+        <div class="w-full lg:w-1/2">
+            <button
+                id="datePickerButton"
+                hx-get="/trips"
+                hx-include="#fromStop, #toStop, #year, #month, #day"
+                hx-target="#datePicker"
+                hx-select-oob="#timetable, #otherway"
+                hx-swap="outerHTML"
+                type="button"
+                class="bg-yellow-600 text-yellow-100 md:text-lg lg:text-xl rounded p-2 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                Change Date
+            </button>
+        </div>
+    </div>
+{{ end }}
+
 {{ block "otherway" . }}
-    <div id="otherway" hx-swap-oob="true" class="fixed bottom-6 left-4 z-10 sm:bottom-8 sm:left-auto sm:right-6 lg:bottom-10 lg:right-8">
+    <div id="otherway">
         {{ if .To.Code }}
-            <a href="/?from={{ .To.Code }}&to={{ .From.Code }}" class="p-2.5 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
+            {{/* TODO: Create an /otherway endpoint for this to avoid page reload */}}
+            <a href="/?from={{ .To.Code }}&to={{ .From.Code }}&date={{ .Timetable.X_DateOnly }}" class="block pb-2 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
                 <span class="hidden sm:inline-block sm:pr-0.5">🔄</span>
                 Other Way
             </a>
         {{ end }}
+    </div>
+{{ end }}
+
+{{ block "dateToggle" . }}
+    <div>
+        <button id="dateToggle" onclick="toggleDatePicker()" class="pb-2 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-gray-600">
+            <span class="hidden sm:inline-block sm:pr-0.5">📅</span>
+            Date
+        </button>
     </div>
 {{ end }}
 
@@ -95,12 +209,12 @@
 
 {{ block "selectFrom" . }}
 <select 
-    hx-get="/to"
-    hx-target="#toStop"
-    hx-swap="outerHTML"
-    hx-include="#toStop"
-    hx-select-oob="#timetable"
     id="fromStop"
+    hx-get="/to"
+    hx-include="#toStop"
+    hx-swap="outerHTML"
+    hx-target="#toStop"
+    hx-select-oob="#timetable, #otherway"
     name="from" 
     class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
@@ -112,12 +226,13 @@
 
 {{ block "selectTo" . }}
 <select 
-    hx-get="/trips"
-    hx-target="#timetable"
-    hx-swap="outerHTML"
-    hx-include="#fromStop"
-    name="to" 
     id="toStop"
+    hx-get="/trips"
+    hx-include="#fromStop, #renderedDate"
+    hx-swap="outerHTML"
+    hx-target="#timetable"
+    hx-select-oob="#datePicker, #otherway"
+    name="to" 
     class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
 	{{ range .DestinationsTo }}
@@ -130,6 +245,7 @@
 <div id="timetable">
 <div class="flex gap-2 items-baseline"> 
     <h2 class="text-xl text-green-300 font-bold sm:text-2xl md:text-3xl">Trips</h2>
+    <input type="hidden" class="hidden" id="renderedDate" name="date" value="{{ .Timetable.X_DateOnly }}" />
     {{ if .Timetable.X_DateDisplay }}
         <span class="ml-auto md:ml-0">{{ .Timetable.ServiceName }} – <span class="font-medium">{{ .Timetable.X_DateDisplay }}</span></span>
     {{ end }}
