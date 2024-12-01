@@ -18,10 +18,9 @@ type Month = DatePartOption
 type Year = DatePartOption
 
 type DatePicker struct {
-	Days         []Day
-	RenderedDate string
-	Months       []Month
-	Years        []Year
+	Days   []Day
+	Months []Month
+	Years  []Year
 }
 
 func parseDateOnly(s string) (time.Time, error) {
@@ -49,7 +48,6 @@ func NewDatePicker(today string, selected string) DatePicker {
 	}
 
 	datePicker := DatePicker{}
-	datePicker.RenderedDate = selected
 
 	years := []Year{}
 	for y := todayTime.Year(); y <= todayTime.AddDate(1, 0, 0).Year(); y += 1 {

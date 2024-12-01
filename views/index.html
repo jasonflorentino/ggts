@@ -57,6 +57,16 @@
         
         function updateTimeToDepart() {
             const allTimeLefts = Array.from(document.querySelectorAll('.timeToDepart'));
+            if (allTimeLefts.length) {
+                const now = Date.now();
+                const end = new Date(allTimeLefts[0].dataset.zeroTime).getTime();
+                if (end - now < 0) {
+                    return
+                }
+                if (end - now > 1000 * 60 * 60 * 24) {
+                    return
+                }
+            }
             allTimeLefts.forEach((el) => {
                 const now = Date.now();
                 const end = new Date(el.dataset.zeroTime).getTime();
@@ -75,11 +85,13 @@
         }
         
         function handleDatePickerDisabled() {
+            const t = document.getElementById("renderedDate");
             const m = document.getElementById("month");
             const d = document.getElementById("day");
             const y = document.getElementById("year");
             const btn = document.getElementById("datePickerButton");
-            btn.disabled = btn.dataset.renderedDate === `${y.value}-${m.value}-${d.value}`;
+            const date = `${y.value}-${m.value}-${d.value}`
+            btn.disabled = t.value === date || Date.now() >= new Date(date).getTime();
         }
         
         document.addEventListener("DOMContentLoaded", (event) => {
@@ -154,7 +166,6 @@
             </select>
         </div>
         <div class="w-full lg:w-1/2">
-            <input type="hidden" class="hidden" id="renderedDate" name="date" value="{{ .DatePicker.RenderedDate }}" />
             <button
                 id="datePickerButton"
                 hx-get="/trips"
@@ -163,7 +174,6 @@
                 hx-select-oob="#timetable, #otherway"
                 hx-swap="outerHTML"
                 type="button"
-                data-rendered-date="{{ .DatePicker.RenderedDate }}"
                 class="bg-yellow-600 text-yellow-100 md:text-lg lg:text-xl rounded p-2 w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 Change Date
@@ -176,7 +186,7 @@
     <div id="otherway">
         {{ if .To.Code }}
             {{/* TODO: Create an /otherway endpoint for this to avoid page reload */}}
-            <a href="/?from={{ .To.Code }}&to={{ .From.Code }}&date={{ .DatePicker.RenderedDate }}" class="block pb-2 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
+            <a href="/?from={{ .To.Code }}&to={{ .From.Code }}&date={{ .Timetable.X_DateOnly }}" class="block pb-2 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
                 <span class="hidden sm:inline-block sm:pr-0.5">🔄</span>
                 Other Way
             </a>
@@ -204,7 +214,7 @@
     hx-include="#toStop"
     hx-swap="outerHTML"
     hx-target="#toStop"
-    hx-select-oob="#timetable"
+    hx-select-oob="#timetable, #otherway"
     name="from" 
     class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
@@ -235,6 +245,7 @@
 <div id="timetable">
 <div class="flex gap-2 items-baseline"> 
     <h2 class="text-xl text-green-300 font-bold sm:text-2xl md:text-3xl">Trips</h2>
+    <input type="hidden" class="hidden" id="renderedDate" name="date" value="{{ .Timetable.X_DateOnly }}" />
     {{ if .Timetable.X_DateDisplay }}
         <span class="ml-auto md:ml-0">{{ .Timetable.ServiceName }} – <span class="font-medium">{{ .Timetable.X_DateDisplay }}</span></span>
     {{ end }}

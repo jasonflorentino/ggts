@@ -76,8 +76,10 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 }
 
 func TransformTimetableForClient(timetable Timetable) (Timetable, error) {
-	dateDisplay := ToDateDisplay(timetable.Date)
+	// TODO: avoid parsing the timetable.Date twice
+	dateDisplay := ParseToDateDisplay(timetable.Date)
 	timetable.X_DateDisplay = dateDisplay
+	timetable.X_DateOnly = ParseToDateOnly(timetable.Date)
 	trips, err := FilterTrips(timetable.Trips)
 	if err != nil {
 		return timetable, err
@@ -133,15 +135,26 @@ func parseTime(s string) (time.Time, error) {
 		t, err = time.ParseInLocation("2006-01-02T15:04:05-07:00", s, env.Location())
 	}
 	if err != nil {
+		t, err = time.ParseInLocation("2006-01-02", s, env.Location())
+	}
+	if err != nil {
 		return t, err
 	}
 	return t, nil
 }
 
-func ToDateDisplay(s string) string {
+func ParseToDateDisplay(s string) string {
 	t, err := parseTime(s)
 	if err != nil {
 		return s
 	}
 	return t.Format("Mon Jan 2, 2006")
+}
+
+func ParseToDateOnly(s string) string {
+	t, err := parseTime(s)
+	if err != nil {
+		return s
+	}
+	return t.Format(time.DateOnly)
 }
