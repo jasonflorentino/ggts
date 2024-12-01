@@ -5,17 +5,18 @@ GO_OUT_FILE="./build/main"
 time go build -v -o $GO_OUT_FILE ./cmd
 echo "Wrote to $GO_OUT_FILE"
 
-echo ""
+echo
 echo "Building CSS"
 CSS_OUT_FILE="./build/static/style.css"
 time ./tailwindcss -i ./css/style.css -o $CSS_OUT_FILE --minify
 echo "Wrote to $CSS_OUT_FILE"
+# TODO: Consider invalidating old stylesheet during update
 
-echo ""
+echo
 echo "Copying views"
 cp -r ./views ./build
 
-echo ""
+echo
 echo "Checking .env"
 ENV_FILE_TPT="./.env.template"
 ENV_FILE_OUT="./build/.env"
@@ -39,13 +40,13 @@ if [ "$ENV_LC_SRC" -eq "$ENV_LC_OUT" ]; then
 else
   echo "ERROR: .env file lc change detected. Update $ENV_FILE_OUT first."
   echo "Diff:"
-  echo ""
+  echo
   diff $ENV_FILE_TPT $ENV_FILE_OUT 
-  echo ""
+  echo
   exit 1
 fi
 
-echo ""
+echo
 echo "Checking log file"
 LOGFILE_K=GGTS_LOGFILE
 LOGFILE_V=$(grep "$LOGFILE_K" "$ENV_FILE_OUT" | sed -E "s/$LOGFILE_K=//")
@@ -64,7 +65,7 @@ else
   echo "Existing log file found."
 fi
 
-echo ""
+echo
 echo "Checking env"
 ENV_K=GGTS_ENV
 ENV_V=$(grep "$ENV_K" "$ENV_FILE_OUT" | sed -E "s/$ENV_K=//")
@@ -76,5 +77,5 @@ else
   echo "No process to restart"
 fi
 
-echo ""
+echo
 echo "Finished"

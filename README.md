@@ -23,10 +23,10 @@ All this stress just to have an excuse to try out [HTMX](https://htmx.org/).
 - See all trips at once; no "Load More" buttons!
 - Shows how much time before departure.
 - _Blazingly_ fast.
+- 2024-11-30: Date selector.
 
 # Limitations
 - No service alerts or updates.
-- No date selection.
 - Can't search for a stop or location.
 - Can't see trips with transfers.
 - Can't see trips with buses.
