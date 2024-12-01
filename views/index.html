@@ -94,10 +94,15 @@
                 }
             })
             document.body.addEventListener("htmx:afterSwap", (evt) => {
-                if (evt.detail.target.id === "timetable") {
-                    clearInterval(interval);
-                    updateTimeToDepart();
-                    interval = setInterval(updateTimeToDepart, 1000 * 5);
+                switch (evt.detail.target.id) {
+                    case "timetable": {
+                        clearInterval(interval);
+                        updateTimeToDepart();
+                        interval = setInterval(updateTimeToDepart, 1000 * 5);
+                    }
+                    case "datePicker": {
+                        handleDatePickerDisabled();
+                    }
                 }
             })
         })
@@ -110,8 +115,12 @@
     <div id="datePicker" class="flex flex-col lg:flex-row gap-2 w-full items-center">
         <div  class="flex gap-2 w-full">
             <select
-                name="month"
                 id="month"
+                hx-get="/date-picker"
+                hx-include="#day, #year"
+                hx-swap="outerHTML"
+                hx-target="#datePicker"
+                name="month"
                 class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
                 onchange="handleDatePickerDisabled()"
             >
@@ -120,8 +129,8 @@
             {{ end }}
             </select>
             <select
-                name="day"
                 id="day"
+                name="day"
                 class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
                 onchange="handleDatePickerDisabled()"
             >
@@ -130,8 +139,12 @@
             {{ end }}
             </select>
             <select
-                name="year"
                 id="year"
+                hx-get="/date-picker"
+                hx-include="#month, #day"
+                hx-swap="outerHTML"
+                hx-target="#datePicker"
+                name="year"
                 class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
                 onchange="handleDatePickerDisabled()"
             >
@@ -141,8 +154,14 @@
             </select>
         </div>
         <div class="w-full lg:w-1/2">
+            <input type="hidden" class="hidden" id="renderedDate" name="date" value="{{ .DatePicker.RenderedDate }}" />
             <button
                 id="datePickerButton"
+                hx-get="/trips"
+                hx-include="#fromStop, #toStop, #year, #month, #day"
+                hx-target="#datePicker"
+                hx-select-oob="#timetable, #otherway"
+                hx-swap="outerHTML"
                 type="button"
                 data-rendered-date="{{ .DatePicker.RenderedDate }}"
                 class="bg-yellow-600 text-yellow-100 md:text-lg lg:text-xl rounded p-2 w-full disabled:opacity-50 disabled:cursor-not-allowed"
@@ -154,9 +173,10 @@
 {{ end }}
 
 {{ block "otherway" . }}
-    <div id="otherway" hx-swap-oob="true">
+    <div id="otherway">
         {{ if .To.Code }}
-            <a href="/?from={{ .To.Code }}&to={{ .From.Code }}" class="block pb-2 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
+            {{/* TODO: Create an /otherway endpoint for this to avoid page reload */}}
+            <a href="/?from={{ .To.Code }}&to={{ .From.Code }}&date={{ .DatePicker.RenderedDate }}" class="block pb-2 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-green-600">
                 <span class="hidden sm:inline-block sm:pr-0.5">🔄</span>
                 Other Way
             </a>
@@ -179,12 +199,12 @@
 
 {{ block "selectFrom" . }}
 <select 
-    hx-get="/to"
-    hx-target="#toStop"
-    hx-swap="outerHTML"
-    hx-include="#toStop"
-    hx-select-oob="#timetable"
     id="fromStop"
+    hx-get="/to"
+    hx-include="#toStop"
+    hx-swap="outerHTML"
+    hx-target="#toStop"
+    hx-select-oob="#timetable"
     name="from" 
     class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
@@ -196,12 +216,13 @@
 
 {{ block "selectTo" . }}
 <select 
-    hx-get="/trips"
-    hx-target="#timetable"
-    hx-swap="outerHTML"
-    hx-include="#fromStop"
-    name="to" 
     id="toStop"
+    hx-get="/trips"
+    hx-include="#fromStop, #renderedDate"
+    hx-swap="outerHTML"
+    hx-target="#timetable"
+    hx-select-oob="#datePicker, #otherway"
+    name="to" 
     class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
 >
 	{{ range .DestinationsTo }}

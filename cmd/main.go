@@ -150,6 +150,7 @@ func main() {
 
 	// Routes
 	e.Static("/", "static")
+	e.GET("/date-picker", handleDatePicker)
 	e.GET("/trips", handleTrips)
 	e.GET("/to", handleTo)
 	e.GET("/", handleRoot)
@@ -158,15 +159,46 @@ func main() {
 	e.Logger.Fatal(e.Start(":" + env.Port()))
 }
 
+// handleDatePicker responds with an updated datepicker.
+func handleDatePicker(c echo.Context) error {
+	changeDate, err := lib.GetChangeDate(c)
+	if err != nil {
+		return err
+	}
+	if changeDate == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "missing date parts")
+	}
+
+	page := NewPage(defaultDate(), changeDate)
+
+	return c.Render(http.StatusOK, "datePicker", page)
+}
+
 // handleTrips responds with the timetable of trips.
 func handleTrips(c echo.Context) error {
 	fromStop := c.QueryParam("from")
 	toStop := c.QueryParam("to")
 	date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
+
+	if fromStop == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "missing from")
+	}
+	if toStop == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "missing to")
+	}
+
+	changeDate, err := lib.GetChangeDate(c)
+	if err != nil {
+		return err
+	}
+	if changeDate != "" {
+		date = changeDate
+	}
+
 	page := NewPage(defaultDate(), date)
 	c.Response().Header().Add(
 		"HX-Push-Url",
-		fmt.Sprintf("?froms=%s&to=%s", fromStop, toStop),
+		fmt.Sprintf("?from=%s&to=%s", fromStop, toStop),
 	)
 	timetable, err := gotrans.FetchTimetable(c, fromStop, toStop, date)
 	if err != nil {
@@ -180,7 +212,7 @@ func handleTrips(c echo.Context) error {
 	page.To.Code = toStop
 	page.From.Code = fromStop
 
-	document, err := renderTemplates(c, []string{"timetable", "otherway"}, page)
+	document, err := renderTemplates(c, []string{"datePicker", "otherway", "timetable"}, page)
 	if err != nil {
 		return err
 	}
@@ -212,7 +244,6 @@ func handleTo(c echo.Context) error {
 
 // handleRoot responds with the full document for the default options.
 func handleRoot(c echo.Context) error {
-
 	fromStop := defaultIfEmpty(c.QueryParam("from"), defaultFrom().Code)
 	toStop := defaultIfEmpty(c.QueryParam("to"), defaultTo().Code)
 	date := defaultIfEmpty(c.QueryParam("date"), defaultDate())

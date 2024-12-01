@@ -39,21 +39,17 @@ func lastDayOfMonth(t time.Time) time.Time {
 }
 
 func NewDatePicker(today string, selected string) DatePicker {
-	fmt.Printf("today %v", today)
-	fmt.Printf("selected %v", selected)
 	todayTime, err := parseDateOnly(today)
 	if err != nil {
-		fmt.Printf("bad today %v", today)
 		panic(fmt.Sprintf("bad today date: %v", today))
 	}
 	selectedTime, err := parseDateOnly(selected)
 	if err != nil {
-		fmt.Printf("bad selected %v", selected)
 		panic(fmt.Sprintf("bad selected date: %v", selected))
 	}
 
 	datePicker := DatePicker{}
-	datePicker.RenderedDate = today
+	datePicker.RenderedDate = selected
 
 	years := []Year{}
 	for y := todayTime.Year(); y <= todayTime.AddDate(1, 0, 0).Year(); y += 1 {
