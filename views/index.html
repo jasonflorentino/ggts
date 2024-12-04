@@ -84,14 +84,21 @@
             dateToggle.classList.toggle('bg-green-600');
         }
         
+        function toDateOnly(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
+            return [y, m, d].join("-");
+        }
+        
         function handleDatePickerDisabled() {
             const t = document.getElementById("renderedDate");
             const m = document.getElementById("month");
             const d = document.getElementById("day");
             const y = document.getElementById("year");
             const btn = document.getElementById("datePickerButton");
-            const date = `${y.value}-${m.value}-${d.value}`
-            btn.disabled = t.value === date || Date.now() >= new Date(date).getTime();
+            const selected = `${y.value}-${m.value}-${d.value}`
+            btn.disabled = t.value === selected || selected < toDateOnly(new Date())
         }
         
         document.addEventListener("DOMContentLoaded", (event) => {
@@ -123,65 +130,6 @@
 </html>
 {{ end }}
 
-{{ block "datePicker" . }}
-    <div id="datePicker" class="flex flex-col lg:flex-row gap-2 w-full items-center">
-        <div  class="flex gap-2 w-full">
-            <select
-                id="month"
-                hx-get="/date-picker"
-                hx-include="#day, #year"
-                hx-swap="outerHTML"
-                hx-target="#datePicker"
-                name="month"
-                class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
-                onchange="handleDatePickerDisabled()"
-            >
-            {{ range .DatePicker.Months }}
-                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
-            {{ end }}
-            </select>
-            <select
-                id="day"
-                name="day"
-                class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
-                onchange="handleDatePickerDisabled()"
-            >
-            {{ range .DatePicker.Days }}
-                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }} {{ if .Meta }}<span>{{ .Meta }}</span>{{ end }}</option>
-            {{ end }}
-            </select>
-            <select
-                id="year"
-                hx-get="/date-picker"
-                hx-include="#month, #day"
-                hx-swap="outerHTML"
-                hx-target="#datePicker"
-                name="year"
-                class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-green-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
-                onchange="handleDatePickerDisabled()"
-            >
-            {{ range .DatePicker.Years }}
-                <option value="{{ .Val }}" {{ if .IsSelected }}selected{{ end }}>{{ .Name }}</option>  
-            {{ end }}
-            </select>
-        </div>
-        <div class="w-full lg:w-1/2">
-            <button
-                id="datePickerButton"
-                hx-get="/trips"
-                hx-include="#fromStop, #toStop, #year, #month, #day"
-                hx-target="#datePicker"
-                hx-select-oob="#timetable, #otherway"
-                hx-swap="outerHTML"
-                type="button"
-                class="bg-yellow-600 text-yellow-100 md:text-lg lg:text-xl rounded p-2 w-full disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                Change Date
-            </button>
-        </div>
-    </div>
-{{ end }}
-
 {{ block "otherway" . }}
     <div id="otherway">
         {{ if .To.Code }}
@@ -194,92 +142,6 @@
     </div>
 {{ end }}
 
-{{ block "dateToggle" . }}
-    <div>
-        <button id="dateToggle" onclick="toggleDatePicker()" class="pb-2 pt-3 px-3 text-green-100 text-base sm:text-lg font-medium rounded-full bg-gray-600">
-            <span class="hidden sm:inline-block sm:pr-0.5">📅</span>
-            Date
-        </button>
-    </div>
-{{ end }}
-
-{{ block "destinationOption" . }}
-    <option value="{{ .Code }}" {{ if .X_isSelected }}selected{{ end }}>{{ .Name }}</option>
-{{ end }}
-
-{{ block "selectFrom" . }}
-<select 
-    id="fromStop"
-    hx-get="/to"
-    hx-include="#toStop"
-    hx-swap="outerHTML"
-    hx-target="#toStop"
-    hx-select-oob="#timetable, #otherway"
-    name="from" 
-    class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
->
-	{{ range .DestinationsFrom }}
-		{{ template "destinationOption" . }}
-	{{ end}}
-</select>
-{{ end }}
-
-{{ block "selectTo" . }}
-<select 
-    id="toStop"
-    hx-get="/trips"
-    hx-include="#fromStop, #renderedDate"
-    hx-swap="outerHTML"
-    hx-target="#timetable"
-    hx-select-oob="#datePicker, #otherway"
-    name="to" 
-    class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
->
-	{{ range .DestinationsTo }}
-		{{ template "destinationOption" . }}
-	{{ end}}
-</select>
-{{ end }}
-
-{{ block "timetable" . }}
-<div id="timetable">
-<div class="flex gap-2 items-baseline"> 
-    <h2 class="text-xl text-green-300 font-bold sm:text-2xl md:text-3xl">Trips</h2>
-    <input type="hidden" class="hidden" id="renderedDate" name="date" value="{{ .Timetable.X_DateOnly }}" />
-    {{ if .Timetable.X_DateDisplay }}
-        <span class="ml-auto md:ml-0">{{ .Timetable.ServiceName }} – <span class="font-medium">{{ .Timetable.X_DateDisplay }}</span></span>
-    {{ end }}
-</div>
-<div  class="mt-2">
-    <ol>
-	{{ range .Timetable.Trips }}
-		{{ template "trip" . }}
-    {{ else }}
-        <li class="flex justify-center p-4">
-            <p class="text-lg">No results</p>
-        </li>
-	{{ end }}
-    </ol>
-</div>
-</div>
-{{ end }}
-
-{{ block "trip" . }}
-<li class="border-t border-green-100 grid grid-cols-7 sm:grid-cols-3 gap-2 pt-1 pb-5">
-    <div class="flex flex-col col-span-3 sm:col-span-1">
-        <span class="text-xs md:text-sm text-blue-200 uppercase opacity-80 font-medium">Departs</span>
-        <span class="text-xl font-medium sm:text-2xl md:text-3xl">{{ .DepartureTimeDisplay }} <span class="timeToDepart animate-pulse text-base font-normal" data-zero-time="{{ .OrderTime }}"></span></span>
-    </div>
-    <div class="flex flex-col col-span-2 sm:col-span-1">
-        <span class="text-xs md:text-sm text-green-300 uppercase opacity-80 font-medium">Travels</span>
-        <span class="text-xl font-medium sm:text-2xl md:text-3xl">{{ .Duration }}</span>
-    </div>
-    <div class="flex flex-col col-span-2 sm:col-span-1 items-end sm:items-start">
-        <span class="text-xs md:text-sm text-red-200 uppercase opacity-80 font-medium">Arrives</span>
-        <span class="text-xl font-medium sm:text-2xl md:text-3xl">{{ .ArrivalTimeDisplay }}</span>
-    </div>
-</li>
-{{ end }}
 
 {{ block "footer" . }}
 <footer class="p-6 bg-stone-950 flex flex-col gap-2 justify-center items-end sm:items-center text-sm md:text-base text-gray-400">

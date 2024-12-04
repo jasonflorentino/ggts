@@ -1,0 +1,37 @@
+{{ block "destinationOption" . }}
+    <option value="{{ .Code }}" {{ if .X_isSelected }}selected{{ end }}>{{ .Name }}</option>
+{{ end }}
+
+{{ block "selectFrom" . }}
+<select 
+    id="fromStop"
+    hx-get="/to"
+    hx-include="#toStop"
+    hx-swap="outerHTML"
+    hx-target="#toStop"
+    hx-select-oob="#timetable, #otherway"
+    name="from" 
+    class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+>
+	{{ range .DestinationsFrom }}
+		{{ template "destinationOption" . }}
+	{{ end}}
+</select>
+{{ end }}
+
+{{ block "selectTo" . }}
+<select 
+    id="toStop"
+    hx-get="/trips"
+    hx-include="#fromStop, #renderedDate"
+    hx-swap="outerHTML"
+    hx-target="#timetable"
+    hx-select-oob="#datePicker, #otherway"
+    name="to" 
+    class="p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500"
+>
+	{{ range .DestinationsTo }}
+		{{ template "destinationOption" . }}
+	{{ end}}
+</select>
+{{ end }}
