@@ -255,7 +255,7 @@ func handleRoot(c echo.Context) error {
 	date := defaultIfEmpty(c.QueryParam("date"), defaultDate())
 
 	page := NewPage(defaultDate(), date)
-	c.Echo().Logger.Infof("datepicker: %v", page.DatePicker)
+	c.Echo().Logger.Debugf("datepicker: %v", page.DatePicker)
 	// Fetch destination list for FROM and TO drop downs
 
 	// Always fetch desinations from Union for our default list of stations

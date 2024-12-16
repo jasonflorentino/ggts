@@ -128,7 +128,7 @@ func ToDurationDisplay(d string) string {
 	}
 }
 
-// parseTime tries a couple different formats since GoTransit is not consistent with that it sends
+// parseTime tries a couple different formats since GoTransit is not consistent with what it sends
 func parseTime(s string) (time.Time, error) {
 	t, err := time.ParseInLocation("2006-01-02T15:04:05", s, env.Location())
 	if err != nil {
