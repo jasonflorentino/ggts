@@ -80,7 +80,7 @@ func TransformTimetableForClient(timetable Timetable) (Timetable, error) {
 	dateDisplay := ParseToDateDisplay(timetable.Date)
 	timetable.X_DateDisplay = dateDisplay
 	timetable.X_DateOnly = ParseToDateOnly(timetable.Date)
-	trips, err := FilterTrips(timetable.Trips)
+	trips, err := FilterTrips(timetable.Trips, time.Now())
 	if err != nil {
 		return timetable, err
 	}
@@ -93,22 +93,43 @@ func TransformTimetableForClient(timetable Timetable) (Timetable, error) {
 }
 
 // Filters only trips
-// - that haven't happened yet
 // - are rail
 // - are direct
-func FilterTrips(trips Trips) (Trips, error) {
-	now := time.Now()
-	out := make(Trips, 0)
+// - that haven't happened yet
+//   - except the most recent one that has happened
+func FilterTrips(trips Trips, now time.Time) (Trips, error) {
+	directRailTrips := make(Trips, 0)
 	for _, trip := range trips {
+		if trip.TransitType == TransitTypes.Rail && trip.Transfers == 0 {
+			directRailTrips = append(directRailTrips, trip)
+		}
+	}
+
+	out := make(Trips, 0)
+	var latestPastTrip Trip
+	var latestPastTime time.Time
+	var haveLatest bool
+
+	for _, trip := range directRailTrips {
 		tripTime, err := time.ParseInLocation("2006-01-02T15:04:05", trip.OrderTime, time.Local)
 		if err != nil {
 			return nil, err
 		}
-		if tripTime.After(now) &&
-			trip.TransitType == TransitTypes.Rail &&
-			trip.Transfers == 0 {
+
+		if tripTime.After(now) {
 			out = append(out, trip)
+		} else {
+			if !haveLatest || tripTime.After(latestPastTime) {
+				latestPastTrip = trip
+				latestPastTime = tripTime
+				haveLatest = true
+			}
 		}
+	}
+
+	if haveLatest {
+		out = append(out, latestPastTrip)
+		out.Sort()
 	}
 	return out, nil
 }

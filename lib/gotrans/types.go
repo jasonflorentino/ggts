@@ -154,3 +154,9 @@ func (ts *Trips) Map(fn func(Trip) Trip) {
 		(*ts)[i] = fn(t)
 	}
 }
+
+func (ts *Trips) Sort() {
+	sort.Slice(*ts, func(i int, j int) bool {
+		return (*ts)[i].OrderTime < (*ts)[j].OrderTime
+	})
+}
