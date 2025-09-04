@@ -38,28 +38,30 @@
             </div>
             </div>
         </form>
-    
+
 
         <div class="fixed bottom-6 left-4 z-10 sm:bottom-8 sm:left-auto sm:right-6 lg:bottom-10 lg:right-8 flex gap-2">
             {{ template "otherway" . }}
             {{ template "dateToggle" }}
         </div>
-    
+
         <section class="mt-4 sm:mt-6 md:mt-8">
             {{ template "timetable" . }}
         </section>
     </main>
-    
+
     {{ template "footer" . }}
 
     <script>
         let interval;
-        
+
         function updateTimeToDepart() {
             const allTimeLefts = Array.from(document.querySelectorAll('.timeToDepart'));
             if (allTimeLefts.length) {
                 const now = Date.now();
-                const end = new Date(allTimeLefts[0].dataset.zeroTime).getTime();
+                // the zero-th trip is allowed to be in the past
+                // but yeah let's bail if the second one is also in the past
+                const end = new Date(allTimeLefts[1].dataset.zeroTime).getTime();
                 if (end - now < 0) {
                     return
                 }
@@ -70,10 +72,32 @@
             allTimeLefts.forEach((el) => {
                 const now = Date.now();
                 const end = new Date(el.dataset.zeroTime).getTime();
-                const min = Math.floor((end - now) / 1000 / 60);
-                const hrs = Math.floor(min / 60);
-                el.innerText = `(${hrs > 0 ? hrs + "h" : ""  }${min - (hrs * 60)}m)`;
+                const isPast = end - now < 0;
+                if (isPast) {
+                  el.innerText = `(departed)`;
+                  el.classList.remove('animate-pulse');
+                  const listEl = getParentListItem(el);
+                  if (listEl) {
+                    listEl.classList.add('departed');
+                  }
+                } else {
+                  const min = Math.floor((end - now) / 1000 / 60);
+                  const hrs = Math.floor(min / 60);
+                  el.innerText = `(${hrs > 0 ? hrs + "h" : ""  }${min - (hrs * 60)}m)`;
+                }
             })
+        }
+
+        function getParentListItem(el) {
+          let parent = el.parentNode;
+          while (parent) {
+            if (parent.tagName === 'LI'){
+              return parent;
+            } else {
+              parent = parent.parentNode;
+            }
+          }
+          return null;
         }
 
         function toggleDatePicker() {
@@ -83,14 +107,14 @@
             dateToggle.classList.toggle('bg-gray-600');
             dateToggle.classList.toggle('bg-green-600');
         }
-        
+
         function toDateOnly(date) {
             const y = date.getFullYear();
             const m = String(date.getMonth() + 1).padStart(2, "0");
             const d = String(date.getDate()).padStart(2, "0");
             return [y, m, d].join("-");
         }
-        
+
         function handleDatePickerDisabled() {
             const t = document.getElementById("renderedDate");
             const m = document.getElementById("month");
@@ -100,12 +124,12 @@
             const selected = `${y.value}-${m.value}-${d.value}`
             btn.disabled = t.value === selected || selected < toDateOnly(new Date())
         }
-        
+
         document.addEventListener("DOMContentLoaded", (event) => {
             updateTimeToDepart();
             handleDatePickerDisabled();
             interval = setInterval(updateTimeToDepart, 1000 * 5);
-            
+
             document.body.addEventListener("htmx:beforeSwap", (evt) => {
                 if (evt.detail.xhr.status === 422) {
                     evt.detail.shouldSwap = true;

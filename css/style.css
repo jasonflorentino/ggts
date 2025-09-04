@@ -2,9 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
     html {
-      font-family: "Overpass", system-ui, sans-serif;
+        font-family: "Overpass", system-ui, sans-serif;
     }
-  }
+}
+
+.departed {
+    @apply opacity-40;
+}
