@@ -76,7 +76,57 @@ func (dests Destinations) OnlyRail() Destinations {
 		}
 	}
 	return dests[:i]
+}
 
+type Departures struct {
+	StationCode     string            `json:"stationCode"`
+	AllDepartures   TransitDepartures `json:"allDepartures,omitempty"`
+	TrainDepartures TransitDepartures `json:"trainDepartures,omitempty"`
+	BusDepartures   TransitDepartures `json:"busDepartures,omitempty"`
+}
+
+type TransitDepartures struct {
+	Items          []Departure `json:"items"`
+	Page           int         `json:"page"`
+	PageSize       int         `json:"pageSize"`
+	TotalItemCount int         `json:"totalItemCount"`
+}
+
+type Departure struct {
+	AllDepartureStops    AllDepartureStops `json:"allDepartureStops"`
+	DelayedDepartureTime string            `json:"delayedDepartureTime,omitempty"`
+	DelayMessage         string            `json:"delayMessage,omitempty"`
+	DelaySeconds         int               `json:"delaySeconds,omitempty"`
+	Gate                 *string           `json:"gate"` // null
+	Info                 string            `json:"info"` // "Proceed / Avancez"
+	LineCode             string            `json:"lineCode"`
+	LineColour           string            `json:"lineColour"` // "#00853e"
+	LineMessageEn        string            `json:"lineMessageEn,omitempty"`
+	LineMessageFr        string            `json:"lineMessageFr,omitempty"`
+	Platform             string            `json:"platform"`          // "5 & 6"
+	ScheduledDateTime    string            `json:"scheduledDateTime"` // "2025-10-18T18:48:00"
+	ScheduledPlatform    *string           `json:"scheduledPlatform"` // null
+	ScheduledTime        string            `json:"scheduledTime"`     // "18:48"
+	Service              string            `json:"service"`
+	Status               string            `json:"status,omitempty"` // "ontime"
+	StopsDisplay         string            `json:"stopsDisplay"`     // "Bloor-Weston-Malton"
+	TransitType          int               `json:"transitType"`
+	TransitTypeName      string            `json:"transitTypeName"`
+	TripNumber           string            `json:"tripNumber"`
+	Zone                 *string           `json:"zone"` // null
+}
+
+type AllDepartureStops struct {
+	StayInTrain          bool              `json:"stayInTrain"` // false
+	TripNumbers          []string          `json:"tripNumbers"` // ["1732"]
+	DepartureDetailsList []DepartureDetail `json:"departureDetailsList"`
+}
+
+type DepartureDetail struct {
+	StopName      string `json:"stopName"`      // "West Harbour GO"
+	DepartureTime string `json:"departureTime"` // "19:24"
+	StopCode      string `json:"stopCode"`      // "WR"
+	IsMajorStop   bool   `json:"isMajorStop"`   // true
 }
 
 type Line struct {
