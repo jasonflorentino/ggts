@@ -1,7 +1,5 @@
 package gotrans
 
-const API_URL = "api.gotransit.com"
-
 const (
 	bus  TransitType = 0
 	rail TransitType = 1

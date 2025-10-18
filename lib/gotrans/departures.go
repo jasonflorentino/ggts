@@ -3,6 +3,7 @@ package gotrans
 import (
 	"encoding/json"
 	"fmt"
+	"ggts/lib/api"
 	"ggts/lib/log"
 	"net/http"
 	"time"
@@ -31,7 +32,7 @@ func FetchDepartures(c echo.Context, destinationCode string) (Departures, error)
 	}
 	log.To(c).Infof("Departures Cache MISS: %s", cacheKey)
 
-	req, err := Request(c, fmt.Sprintf("/external/go/departures/stops/%s/status/departures?page=1&transitTypeName=All&pageLimit=5", destinationCode))
+	req, err := api.Metrolinx(c, fmt.Sprintf("/external/go/departures/stops/%s/status/departures?page=1&transitTypeName=All&pageLimit=5", destinationCode))
 	if err != nil {
 		return Departures{}, echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -48,7 +49,7 @@ func FetchDepartures(c echo.Context, destinationCode string) (Departures, error)
 	}
 	log.To(c).Infof("Got response - Status: %d, ContentLength: %d", res.StatusCode, res.ContentLength)
 
-	body, err := GetBody(res)
+	body, err := api.GetBody(res)
 	if err != nil {
 		return Departures{}, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

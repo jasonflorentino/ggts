@@ -3,6 +3,7 @@ package gotrans
 import (
 	"encoding/json"
 	"fmt"
+	"ggts/lib/api"
 	"ggts/lib/env"
 	"ggts/lib/log"
 	"net/http"
@@ -40,7 +41,7 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 	params.Add("toStop", toStop)
 	params.Add("date", date)
 	queryString := params.Encode()
-	req, err := Request(c, fmt.Sprintf("/v2/schedules/en/timetable/all?%s", queryString))
+	req, err := api.Gotransit(c, fmt.Sprintf("/v2/schedules/en/timetable/all?%s", queryString))
 	if err != nil {
 		return Timetable{}, echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -57,7 +58,7 @@ func FetchTimetable(c echo.Context, fromStop, toStop, date string) (Timetable, e
 	}
 	log.To(c).Infof("Got response - Status: %d, ContentLength: %d", res.StatusCode, res.ContentLength)
 
-	body, err := GetBody(res)
+	body, err := api.GetBody(res)
 	if err != nil {
 		return Timetable{}, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
