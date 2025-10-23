@@ -294,6 +294,13 @@ func handleRoot(c echo.Context) error {
 	page.To = to
 	page.DestinationsTo = page.DestinationsTo.SetSelected(to.Code)
 
+	// Fetch upcoming departures for the departure stop
+
+	departures, err := gotrans.FetchDepartures(c, fromStop)
+	if err != nil {
+		return err
+	}
+
 	// Fetch timetable for the from-to combination
 
 	timetable, err := gotrans.FetchTimetable(c, fromStop, toStop, date)
@@ -304,6 +311,8 @@ func handleRoot(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	timetable.AddPlatforms(departures.ToTripNumberXPlatform())
+
 	page.Timetable = timetable
 
 	return c.Render(http.StatusOK, "index", page)

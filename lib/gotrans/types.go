@@ -1,6 +1,8 @@
 package gotrans
 
-import "sort"
+import (
+	"sort"
+)
 
 type Destination struct {
 	Code         string      `json:"code"`
@@ -85,11 +87,31 @@ type Departures struct {
 	BusDepartures   TransitDepartures `json:"busDepartures,omitempty"`
 }
 
+type PlatformMap = map[string]string
+
+func (d Departures) ToTripNumberXPlatform() PlatformMap {
+	deps := d.AllDepartures // I think with our use we'll always get this field from the API, but let's check it to be sure.
+	if deps.IsEmpty() {
+		return map[string]string{}
+	}
+
+	tripXPlatform := make(map[string]string)
+	for _, item := range deps.Items {
+		tripXPlatform[item.TripNumber] = item.Platform
+	}
+
+	return tripXPlatform
+}
+
 type TransitDepartures struct {
 	Items          []Departure `json:"items"`
 	Page           int         `json:"page"`
 	PageSize       int         `json:"pageSize"`
 	TotalItemCount int         `json:"totalItemCount"`
+}
+
+func (td TransitDepartures) IsEmpty() bool {
+	return td.Items == nil && td.Page == 0 && td.PageSize == 0 && td.TotalItemCount == 0
 }
 
 type Departure struct {
@@ -182,6 +204,14 @@ type Timetable struct {
 	X_DateOnly           string
 }
 
+func (t *Timetable) AddPlatforms(platforms PlatformMap) {
+	for i := range t.Trips {
+		trip := &t.Trips[i]
+		line := trip.Lines[0] // We only support direct trips; there will only be one "line" in this slice
+		trip.X_Platform = platforms[line.TripNumber]
+	}
+}
+
 type TransitType int
 
 type Trip struct {
@@ -195,6 +225,7 @@ type Trip struct {
 	ServiceName          string      `json:"serviceName"` // Line Name
 	Transfers            int         `json:"transfers"`
 	TransitType          TransitType `json:"transitType"`
+	X_Platform           string
 }
 
 type Trips []Trip
