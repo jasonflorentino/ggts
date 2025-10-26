@@ -87,9 +87,11 @@ type Departures struct {
 	BusDepartures   TransitDepartures `json:"busDepartures,omitempty"`
 }
 
-type PlatformMap = map[string]string
+type TripNumber = string
+type Platform = string
+type PlatformMap = map[TripNumber]Platform
 
-func (d Departures) ToTripNumberXPlatform() PlatformMap {
+func (d Departures) ToPlatformMap() PlatformMap {
 	deps := d.AllDepartures // I think with our use we'll always get this field from the API, but let's check it to be sure.
 	if deps.IsEmpty() {
 		return map[string]string{}
