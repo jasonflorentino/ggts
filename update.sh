@@ -1,23 +1,11 @@
 #!/usr/bin/env bash
 
-echo "Building Go"
-GO_OUT_FILE="./build/main"
-time go build -v -o $GO_OUT_FILE ./cmd
-echo "Wrote to $GO_OUT_FILE"
+set -e
+set -u
+set -o pipefail
 
 echo
-echo "Building CSS"
-CSS_OUT_FILE="./build/static/style.css"
-time ./tailwindcss -i ./css/style.css -o $CSS_OUT_FILE --minify
-echo "Wrote to $CSS_OUT_FILE"
-# TODO: Consider invalidating old stylesheet during update
-
-echo
-echo "Copying views"
-cp -r ./views ./build
-
-echo
-echo "Checking .env"
+echo "Checking .env file"
 ENV_FILE_TPT="./.env.template"
 ENV_FILE_OUT="./build/.env"
 
@@ -26,7 +14,7 @@ if [ ! -e $ENV_FILE_OUT ]; then
   cp $ENV_FILE_TPT $ENV_FILE_OUT
   echo "Please ensure $ENV_FILE_OUT is correct before continuing"
   exit 1
-else 
+else
   echo ".env file found"
 fi
 
@@ -41,10 +29,26 @@ else
   echo "ERROR: .env file lc change detected. Update $ENV_FILE_OUT first."
   echo "Diff:"
   echo
-  diff $ENV_FILE_TPT $ENV_FILE_OUT 
+  diff $ENV_FILE_TPT $ENV_FILE_OUT
   echo
   exit 1
 fi
+
+echo
+echo "Building Go"
+GO_OUT_FILE="./build/main"
+time go build -v -o $GO_OUT_FILE ./cmd
+echo "Wrote to $GO_OUT_FILE"
+
+echo
+echo "Building CSS"
+CSS_OUT_FILE="./build/static/style.css"
+time ./tailwindcss -i ./css/style.css -o $CSS_OUT_FILE --minify
+echo "Wrote to $CSS_OUT_FILE"
+
+echo
+echo "Copying views"
+cp -r ./views ./build
 
 echo
 echo "Checking log file"
@@ -79,3 +83,4 @@ fi
 
 echo
 echo "Finished"
+echo

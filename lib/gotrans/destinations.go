@@ -3,6 +3,7 @@ package gotrans
 import (
 	"encoding/json"
 	"fmt"
+	"ggts/lib/api"
 	"ggts/lib/log"
 	"net/http"
 	"time"
@@ -32,7 +33,7 @@ func FetchDestinations(c echo.Context, destinationCode, date string) (Destinatio
 	}
 	log.To(c).Infof("Destinations Cache MISS: %s", cacheKey)
 
-	req, err := Request(c, fmt.Sprintf("/v2/schedules/stops/%s/destinations?Date=%s", destinationCode, date))
+	req, err := api.Gotransit(c, fmt.Sprintf("/v2/schedules/stops/%s/destinations?Date=%s", destinationCode, date))
 	if err != nil {
 		return nil, echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -49,7 +50,7 @@ func FetchDestinations(c echo.Context, destinationCode, date string) (Destinatio
 	}
 	log.To(c).Infof("Got response - Status: %d, ContentLength: %d", res.StatusCode, res.ContentLength)
 
-	body, err := GetBody(res)
+	body, err := api.GetBody(res)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

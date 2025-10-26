@@ -1,132 +1,19 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"ggts/lib"
 	"ggts/lib/env"
 	"ggts/lib/gotrans"
 	"ggts/lib/log"
-	"html/template"
-	"io"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/time/rate"
 )
-
-type Templates struct {
-	templates *template.Template
-}
-
-func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.templates.ExecuteTemplate(w, name, data)
-}
-
-func newTemplate() *Templates {
-	return &Templates{
-		templates: template.Must(template.ParseGlob("views/*.html")),
-	}
-}
-
-type Page struct {
-	DatePicker       lib.DatePicker
-	DestinationsFrom gotrans.Destinations
-	DestinationsTo   gotrans.Destinations
-	ErrorCode        int
-	ErrorMessage     string
-	Timetable        gotrans.Timetable
-	From             gotrans.Destination
-	To               gotrans.Destination
-	GGTS_TITLE       string
-	GGTS_URL         string
-}
-
-func (p Page) String() string {
-	return fmt.Sprintf(
-		"DestinationsFrom: %v, DestinationsTo: %v, ErrorCode: %d, ErrorMessage: %s, Timetable: %v, From: %v, To: %v, GGTS_TITLE: %s, GGTS_URL: %s",
-		p.DestinationsFrom,
-		p.DestinationsTo,
-		p.ErrorCode,
-		p.ErrorMessage,
-		p.Timetable,
-		p.From,
-		p.To,
-		p.GGTS_TITLE,
-		p.GGTS_URL,
-	)
-}
-
-func NewPage(today string, selected string) Page {
-	return Page{
-		DatePicker: lib.NewDatePicker(today, selected),
-		Timetable:  gotrans.Timetable{},
-		GGTS_TITLE: env.Title(),
-		GGTS_URL:   env.URL(),
-	}
-}
-
-func defaultDate() string {
-	now := time.Now()
-	return now.Format("2006-01-02")
-}
-
-func defaultIfEmpty(value, defaultValue string) string {
-	if value == "" {
-		return defaultValue
-	}
-	return value
-}
-
-func isStartOfDay() bool {
-	now := time.Now()
-	return now.In(env.Location()).Hour() < 13
-}
-
-func defaultFrom() gotrans.Destination {
-	defaultStop := gotrans.Union
-	if isStartOfDay() {
-		defaultStop = gotrans.WestHarbour
-	}
-	return defaultStop
-}
-
-func defaultTo() gotrans.Destination {
-	defaultStop := gotrans.WestHarbour
-	if isStartOfDay() {
-		defaultStop = gotrans.Union
-	}
-	return defaultStop
-}
-
-func customHTTPErrorHandler(err error, c echo.Context) {
-	code := http.StatusInternalServerError
-	if he, ok := err.(*echo.HTTPError); ok {
-		code = he.Code
-	}
-	log.To(c).Error(err)
-	page := NewPage(defaultDate(), defaultDate())
-	page.ErrorCode = code
-	page.ErrorMessage = http.StatusText(code)
-	c.Render(code, "error", page)
-}
-
-func renderTemplates(c echo.Context, blocks []string, page Page) (string, error) {
-	var buf bytes.Buffer
-	var builder strings.Builder
-	for _, block := range blocks {
-		buf.Reset()
-		if err := c.Echo().Renderer.Render(&buf, block, page, c); err != nil {
-			return "", err
-		}
-		builder.WriteString(buf.String())
-	}
-	return builder.String(), nil
-}
 
 func main() {
 	// Load runtime vars
@@ -294,6 +181,13 @@ func handleRoot(c echo.Context) error {
 	page.To = to
 	page.DestinationsTo = page.DestinationsTo.SetSelected(to.Code)
 
+	// Fetch upcoming departures for the stop
+
+	departures, err := gotrans.FetchDepartures(c, fromStop)
+	if err != nil {
+		return err
+	}
+
 	// Fetch timetable for the from-to combination
 
 	timetable, err := gotrans.FetchTimetable(c, fromStop, toStop, date)
@@ -304,7 +198,54 @@ func handleRoot(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	timetable.AddPlatforms(departures.ToPlatformMap())
+
 	page.Timetable = timetable
 
 	return c.Render(http.StatusOK, "index", page)
+}
+
+func customHTTPErrorHandler(err error, c echo.Context) {
+	code := http.StatusInternalServerError
+	if he, ok := err.(*echo.HTTPError); ok {
+		code = he.Code
+	}
+	log.To(c).Error(err)
+	page := NewPage(defaultDate(), defaultDate())
+	page.ErrorCode = code
+	page.ErrorMessage = http.StatusText(code)
+	c.Render(code, "error", page)
+}
+
+func defaultIfEmpty(value, defaultValue string) string {
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+func defaultDate() string {
+	now := time.Now()
+	return now.Format("2006-01-02")
+}
+
+func defaultFrom() gotrans.Destination {
+	defaultStop := gotrans.Union
+	if isStartOfDay() {
+		defaultStop = gotrans.WestHarbour
+	}
+	return defaultStop
+}
+
+func defaultTo() gotrans.Destination {
+	defaultStop := gotrans.WestHarbour
+	if isStartOfDay() {
+		defaultStop = gotrans.Union
+	}
+	return defaultStop
+}
+
+func isStartOfDay() bool {
+	now := time.Now()
+	return now.In(env.Location()).Hour() < 13
 }

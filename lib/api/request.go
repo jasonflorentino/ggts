@@ -1,4 +1,4 @@
-package gotrans
+package api
 
 import (
 	"compress/gzip"
@@ -10,11 +10,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Request(c echo.Context, endpoint string) (*http.Request, error) {
+func request(c echo.Context, host, endpoint string) (*http.Request, error) {
 	if r, _ := utf8.DecodeRuneInString(endpoint); r != '/' {
 		endpoint = "/" + endpoint
 	}
-	url := "https://" + API_URL + endpoint
+	url := "https://" + host + endpoint
 	log.To(c).Infof("Creating request: %s", url)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	req.Header = http.Header{
@@ -23,7 +23,7 @@ func Request(c echo.Context, endpoint string) (*http.Request, error) {
 		"Accept-Language": {"en-US,en;q=0.5"},
 		"Cache-Control":   {"no-cache"},
 		"Connection":      {"keep-alive"},
-		"Host":            {API_URL},
+		"Host":            {host},
 		"Origin":          {"https://www.gotransit.com"},
 		"Pragma":          {"no-cache"},
 		"Priority":        {"u=0"},
