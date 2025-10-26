@@ -1,4 +1,4 @@
-# 🚆 GGTS 
+# 🚆 GGTS
 
 Go GO Train Schedule: A web app for GO Train schedules written in Go lang.
 
@@ -24,6 +24,7 @@ All this stress just to have an excuse to try out [HTMX](https://htmx.org/).
 - Shows how much time before departure.
 - _Blazingly_ fast.
 - 2024-11-30: Date selector.
+- 2025-10-25: Platform numbers.
 
 # Limitations
 - No service alerts or updates.
@@ -65,10 +66,10 @@ To deploy the latest changes, ssh in there, pull main, and run `./update.sh`
 ## Log Level
 You can set the log level from the `.env` file. This can be helpful to hide verbose logs during dev, or allow more logs in prod.
 ```
-GGTS_LOGLEVEL=1 # Debug 
+GGTS_LOGLEVEL=1 # Debug
 GGTS_LOGLEVEL=2 # Info
-GGTS_LOGLEVEL=3 # Warn 
-GGTS_LOGLEVEL=4 # Error 
-GGTS_LOGLEVEL=5 # Off 
+GGTS_LOGLEVEL=3 # Warn
+GGTS_LOGLEVEL=4 # Error
+GGTS_LOGLEVEL=5 # Off
 ...
 ```
