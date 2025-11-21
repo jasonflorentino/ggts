@@ -33,7 +33,8 @@ func FetchDestinations(c echo.Context, destinationCode, date string) (Destinatio
 	}
 	log.To(c).Infof("Destinations Cache MISS: %s", cacheKey)
 
-	req, err := api.Gotransit(c, fmt.Sprintf("/v2/schedules/stops/%s/destinations?Date=%s", destinationCode, date))
+	req, err := api.Metrolinx(c, fmt.Sprintf("/external/go/schedules/stops/%s/destinations?Date=%s", destinationCode, date))
+	// req, err := api.Gotransit(c, fmt.Sprintf("/v2/schedules/stops/%s/destinations?Date=%s", destinationCode, date))
 	if err != nil {
 		return nil, echo.NewHTTPError(
 			http.StatusInternalServerError,
