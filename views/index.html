@@ -135,10 +135,13 @@
               const toText = Array.from(toSelect.querySelectorAll("option"))
                 .find(o => o.value === toSelect.value)
                 .innerText
-                .replace(/GO$/, "")
                 .trim();
 
-              message = message.replace(/TO_PLACEHOLDER/, toText);
+              message = message
+                .replace(/TO_PLACEHOLDER/, toText)
+                .replace(/\sGO\s?/g, " ")
+                .replace(/\sSTATION\s?/ig, " ")
+                .trim();
 
               navigator.clipboard.writeText(message).then(() => {
                 btn.innerText = "Copied!";
