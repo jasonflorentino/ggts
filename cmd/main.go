@@ -226,6 +226,9 @@ func defaultIfEmpty(value, defaultValue string) string {
 
 func defaultDate() string {
 	now := time.Now()
+	if now.Hour() < 3 {
+		now = now.Add(-24 * time.Hour)
+	}
 	return now.Format("2006-01-02")
 }
 
