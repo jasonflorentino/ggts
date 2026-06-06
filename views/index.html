@@ -125,7 +125,33 @@
             btn.disabled = t.value === selected || selected < toDateOnly(new Date())
         }
 
+        function attachCopyTripHandlers() {
+          const btns = document.querySelectorAll("[id^=trip-btn-]");
+          btns.forEach(btn => {
+            btn.addEventListener("click", (b) => {
+              let message = b.target.dataset.content;
+
+              const toSelect = document.getElementById("toStop")
+              const toText = Array.from(toSelect.querySelectorAll("option"))
+                .find(o => o.value === toSelect.value)
+                .innerText
+                .replace(/GO$/, "")
+                .trim();
+
+              message = message.replace(/TO_PLACEHOLDER/, toText);
+
+              navigator.clipboard.writeText(message).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => (btn.innerText = "Copy trip"), 2000);
+              }).catch(err => {
+                console.error('Failed to copy', err);
+              });
+            })
+          })
+        }
+
         document.addEventListener("DOMContentLoaded", (event) => {
+            attachCopyTripHandlers();
             updateTimeToDepart();
             handleDatePickerDisabled();
             interval = setInterval(updateTimeToDepart, 1000 * 5);
@@ -139,6 +165,8 @@
             document.body.addEventListener("htmx:afterSwap", (evt) => {
                 switch (evt.detail.target.id) {
                     case "timetable": {
+                        setTimeout(attachCopyTripHandlers, 0); // Guess it was a timing issue. Waiting a tick fixes it :/
+
                         clearInterval(interval);
                         updateTimeToDepart();
                         interval = setInterval(updateTimeToDepart, 1000 * 5);
